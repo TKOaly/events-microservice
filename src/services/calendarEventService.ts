@@ -3,6 +3,7 @@ import * as R from 'ramda';
 
 export interface CalendarEvent {
   id: number,
+  name: string,
   user_id: number,
   created: Date,
   starts: Date,
@@ -33,7 +34,8 @@ export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
 
 function parseQueryResult(row: object) {
   return R.pick([
-    'id', 
+    'id',
+    'name', 
     'user_id', 
     'created', 
     'starts', 
