@@ -12,8 +12,9 @@ async function startServer(servicePort: number) {
     "/events",
     authorizeRequest,
     async (req: express.Request, res: express.Response) => {
+      const fromDate = req.query.fromDate
       try {
-        const calendarEvents = await calendarEventService.getAllCalendarEvents();
+        const calendarEvents = await calendarEventService.getAllCalendarEvents(fromDate);
         return res.status(200).json(calendarEvents);
       } catch (e) {
         res.status(500).json({error: "internal server error"});

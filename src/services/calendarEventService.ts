@@ -27,8 +27,10 @@ const db = knex({
   dialect: "mysql2"
 });
 
-export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
-  const query = await db("calendar_events").select();
+export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEvent[]> {
+  const query = await db("calendar_events")
+    .select()
+    .where('starts', '>', new Date(fromDate));
   return R.map(parseQueryResult, query) as CalendarEvent[];
 }
 
