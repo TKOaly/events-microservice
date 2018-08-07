@@ -1,5 +1,6 @@
 import * as knex from "knex";
 import * as R from "ramda";
+import * as moment from 'moment'
 
 export interface CalendarEvent {
   id: number;
@@ -30,7 +31,7 @@ const db = knex({
 export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEvent[]> {
   const query = await db("calendar_events")
     .select()
-    .where('starts', '>', new Date(fromDate));
+    .where('starts', '>=', moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'))
   return R.map(parseQueryResult, query) as CalendarEvent[];
 }
 
