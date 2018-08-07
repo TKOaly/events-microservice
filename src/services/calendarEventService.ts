@@ -31,7 +31,7 @@ const db = knex({
 export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEvent[]> {
   let query = db("calendar_events").select()
   if (fromDate) {
-    query.where('starts', '>=', moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'))
+    query.where('starts', '>=', moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')).orderBy('starts', 'asc')
   }
   return query.then(result => R.map(parseQueryResult, result) as CalendarEvent[]);
 }
