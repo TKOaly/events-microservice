@@ -1,5 +1,5 @@
-import * as knex from "knex";
-import * as R from "ramda";
+import * as knex from 'knex';
+import * as R from 'ramda';
 import * as moment from 'moment'
 
 export interface CalendarEvent {
@@ -15,6 +15,7 @@ export interface CalendarEvent {
   location: string;
   category: string;
   description: string;
+  deleted: boolean;
 }
 
 const db = knex({
@@ -25,11 +26,11 @@ const db = knex({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
   },
-  dialect: "mysql2"
+  dialect: 'mysql2'
 });
 
 export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEvent[]> {
-  let query = db("calendar_events").select()
+  let query = db('calendar_events').select()
   if (fromDate) {
     query.where('starts', '>=', moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')).orderBy('starts', 'asc')
   }
@@ -39,18 +40,19 @@ export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEv
 function parseQueryResult(row: object) {
   return R.pick(
     [
-      "id",
-      "name",
-      "user_id",
-      "created",
-      "starts",
-      "registration_starts",
-      "registration_ends",
-      "cancellation_starts",
-      "cancellation_ends",
-      "location",
-      "category",
-      "description"
+      'id',
+      'name',
+      'user_id',
+      'created',
+      'starts',
+      'registration_starts',
+      'registration_ends',
+      'cancellation_starts',
+      'cancellation_ends',
+      'location',
+      'category',
+      'description',
+      'deleted'
     ],
     row
   );
