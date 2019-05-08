@@ -9,7 +9,7 @@ async function startServer(servicePort: number) {
   const app = express();
 
   app.get(
-    "/events",
+    "/api/events",
     authorizeRequest,
     async (req: express.Request, res: express.Response) => {
       const fromDate = req.query.fromDate
@@ -22,7 +22,7 @@ async function startServer(servicePort: number) {
   });
 
   app.get(
-    '/users/:id/events',
+    '/api/users/:id/events',
     authorizeRequest,
     async ({ params: { id }}, res) => {
       try {
