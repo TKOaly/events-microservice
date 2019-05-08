@@ -68,5 +68,5 @@ function parseQueryResult(row: any): CalendarEvent {
 }
 
 function parseUserEventsQueryResult(row: any): CalendarEvent & { price: string } {
-  return { ...parseQueryResult(row), price: row.price as string })
+  return { ...parseQueryResult(row), price: row.price as string }
 }
