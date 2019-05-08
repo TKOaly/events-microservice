@@ -30,15 +30,24 @@ const db = knex({
 });
 
 export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEvent[]> {
-  let query = db('calendar_events').select()
+  const query = db('calendar_events').select()
   if (fromDate) {
     query.where('starts', '>=', moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')).orderBy('starts', 'asc')
   }
   return query.then(result => R.map(parseQueryResult, result) as CalendarEvent[]);
 }
 
-function parseQueryResult(row: object) {
-  return R.pick(
+export async function getEventsForUserId(userId: number): Promise<Array<CalendarEvent & { price: string }>> {
+  return db
+    .select('calendar_events.*')
+    .from('registrations')
+    .innerJoin('calendar_events', 'calendar_events.id', '=', 'registrations.id')
+    .where({user_id: userId})
+    .then(result => R.map(parseUserEventsQueryResult, result))
+}
+
+function parseQueryResult(row: any): CalendarEvent {
+  return R.pick<CalendarEvent, any>(
     [
       'id',
       'name',
@@ -55,5 +64,9 @@ function parseQueryResult(row: object) {
       'deleted'
     ],
     row
-  );
+  )
+}
+
+function parseUserEventsQueryResult(row: any): CalendarEvent & { price: string } {
+  return { ...parseQueryResult(row), price: row.price as string })
 }

@@ -21,6 +21,19 @@ async function startServer(servicePort: number) {
       }
   });
 
+  app.get(
+    '/users/:id/events',
+    authorizeRequest,
+    async ({ params: { id }}, res) => {
+      try {
+        const calendarEvents = await calendarEventService.getEventsForUserId(Number(id))
+        return res.json(calendarEvents)
+      } catch (e) {
+        res.status(500).json({error: "internal server error"});
+      }
+    }
+  )
+
   app.listen(servicePort);
 }
 
