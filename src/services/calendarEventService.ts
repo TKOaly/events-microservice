@@ -41,7 +41,7 @@ export async function getEventsForUserId(userId: number): Promise<Array<Calendar
   return db
     .select('calendar_events.*')
     .from('registrations')
-    .innerJoin('calendar_events', 'calendar_events.id', '=', 'registrations.id')
+    .innerJoin('calendar_events', 'calendar_events.id', '=', 'registrations.calendar_event_id')
     .where({'registrations.user_id': userId})
     .then(result => R.map(parseUserEventsQueryResult, result))
 }
