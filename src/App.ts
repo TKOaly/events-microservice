@@ -29,6 +29,7 @@ async function startServer(servicePort: number) {
         const calendarEvents = await calendarEventService.getEventsForUserId(Number(id))
         return res.json(calendarEvents)
       } catch (e) {
+        console.error(e)
         res.status(500).json({error: "internal server error"});
       }
     }

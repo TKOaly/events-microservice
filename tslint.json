@@ -7,7 +7,8 @@
     "object-literal-sort-keys": false,
     "trailing-comma": false,
     "quotemark": ["single", true],
-    "semicolon": false
+    "semicolon": false,
+    "no-console": false
   },
   "rulesDirectory": []
 }
