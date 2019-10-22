@@ -1,5 +1,5 @@
-import * as knex from "knex";
-import * as R from "ramda";
+import knex from "knex";
+import R from "ramda";
 
 export interface CalendarEvent {
   id: number;
@@ -27,12 +27,12 @@ const db = knex({
   dialect: "mysql2"
 });
 
-export async function getAllCalendarEvents(): Promise<CalendarEvent[]> {
-  const query = await db("calendar_events").select();
-  return R.map(parseQueryResult, query) as CalendarEvent[];
+export async function getAllCalendarEvents() {
+  const query = await db().select().from<CalendarEvent>("calendar_events");
+  return R.map(parseQueryResult, query);
 }
 
-function parseQueryResult(row: object) {
+function parseQueryResult(row: CalendarEvent) {
   return R.pick(
     [
       "id",

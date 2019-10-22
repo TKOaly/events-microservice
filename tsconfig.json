@@ -9,6 +9,9 @@
     "removeComments": true,
     "noUnusedLocals": true,
     "noImplicitAny": false,
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "outDir": "./dist/",
     "rootDirs": ["./src"],
     "lib": ["es6", "dom", "esnext"]
