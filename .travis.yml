@@ -1,0 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+  - echo "No script"
+
+deploy:
+  provider: script
+  script: bash ./scripts/deploy_container.sh
+  on:
+    master

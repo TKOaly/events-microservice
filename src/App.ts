@@ -35,7 +35,7 @@ async function startServer(servicePort: number) {
     }
   )
 
-  app.listen(servicePort);
+  app.listen(servicePort, () => console.log("App listining on port", servicePort));
 }
 
 function authorizeRequest(req: express.Request, res: express.Response, next: express.NextFunction) {
