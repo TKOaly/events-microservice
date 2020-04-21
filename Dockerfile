@@ -5,7 +5,9 @@ COPY yarn.lock ./
 COPY package.json ./
 COPY tsconfig.json ./
 COPY src ./src
-RUN yarn --dev
+RUN yarn
+
+RUN yarn build
 
 EXPOSE 3001
 
