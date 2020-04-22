@@ -10,6 +10,9 @@ async function startServer(servicePort: number) {
 
   app.use(logger)
 
+  // Ping route
+  app.get('/ping', (_, res) => res.send('Hello there'))
+
   app.get(
     '/api/events',
     authorizeRequest,
