@@ -1,4 +1,13 @@
+terraform {
+  backend "s3" {
+    region = "eu-west-1"
+    bucket = "event-service-state"
+    key    = "event-service-state"
+  }
+}
+
 provider "aws" {
+  profile = "tekis"
   region = "eu-west-1"
 }
 
@@ -27,27 +36,29 @@ data "aws_acm_certificate" "certificate" {
 }
 
 data "aws_ssm_parameter" "event_service_auth_token" {
-  cluster_name = "event-service-auth-token"
+  name = "event-service-auth-token"
+}
+
+data "aws_vpc" "tekis_vpc" {
+  filter {
+    name   = "tag:Name"
+    values = ["tekis-VPC"]
+  }
 }
 
 data "aws_subnet_ids" "event_service_subnets" {
+  vpc_id = "${data.aws_vpc.tekis_vpc.id}"
   filter {
-    name = "tag:Name"
+    name   = "tag:Name"
     values = ["tekis-private-subnet-1a", "tekis-private-subnet-1b"]
   }
 }
 
 data "aws_subnet_ids" "public_subnets" {
+  vpc_id = "${data.aws_vpc.tekis_vpc.id}"
   filter {
-    name = "tag:Name"
+    name   = "tag:Name"
     values = ["tekis-public-subnet-1a", "tekis-public-subnet-1b"]
-  }
-}
-
-data "aws_vpc" "main_vpc" {
-  filter {
-    name = "tag:Name"
-    values = ["tekis-VPC"]
   }
 }
 
@@ -113,7 +124,7 @@ resource "aws_security_group" "event_service_task_sg" {
     from_port   = 3001
     to_port     = 3001
     protocol    = "tcp"
-    cidr_blocks = ["*"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -129,10 +140,10 @@ resource "aws_security_group" "event_service_load_balancer_sg" {
   vpc_id = "${data.aws_vpc.tekis_vpc.id}"
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["*"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -155,9 +166,9 @@ resource "aws_lb" "event_service_lb" {
 
 resource "aws_alb_target_group" "event_service_lb_target_group" {
   name        = "cb-target-group"
-  port        = 80
+  port        = 443
   protocol    = "HTTP"
-  vpc_id      = "${data.aws_vpc.main_vpc.id}" 
+  vpc_id      = "${data.aws_vpc.tekis_vpc.id}"
   target_type = "ip"
 }
 
@@ -172,10 +183,10 @@ resource "aws_alb_listener" "event_service_lb_listener" {
   }
 }
 
-/*resource "aws_lb_listener_certificate" "example" {
+resource "aws_lb_listener_certificate" "example" {
   listener_arn    = "${aws_alb_listener.event_service_lb_listener.arn}"
   certificate_arn = "${data.aws_acm_certificate.certificate.arn}"
-}*/
+}
 
 resource "aws_cloudwatch_log_group" "event_service_cw" {
   name = "/ecs/christina-regina/event-service"
@@ -236,12 +247,12 @@ resource "aws_ecs_service" "event_service" {
 
   network_configuration {
     security_groups = ["${aws_security_group.event_service_task_sg.id}"]
-    subnets = "${data.aws_subnet_ids.event_service_subnets.ids}"
+    subnets         = "${data.aws_subnet_ids.event_service_subnets.ids}"
   }
 
   load_balancer {
     target_group_arn = "${aws_alb_target_group.event_service_lb_target_group.arn}"
-    container_name = "event_service_task"
-    container_port = 3001
+    container_name   = "event_service_task"
+    container_port   = 3001
   }
 }

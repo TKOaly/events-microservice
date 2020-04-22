@@ -1,12 +1,14 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
-
 import * as express from 'express'
-
 import * as calendarEventService from './services/calendarEventService'
+import * as morgan from 'morgan'
 
 async function startServer(servicePort: number) {
+  const logger = morgan(':method :url :status - :response-time ms')
   const app = express()
+
+  app.use(logger)
 
   app.get(
     '/api/events',

@@ -10,13 +10,14 @@
     "@types/moment": "^2.13.0",
     "@types/node": "^10.5.5",
     "@types/ramda": "^0.25.36",
-    "typescript": "^3.0.1",
     "dotenv": "^6.0.0",
     "express": "^4.17.1",
     "knex": "^0.20.10",
     "moment": "^2.22.2",
+    "morgan": "^1.10.0",
     "mysql2": "^2.1.0",
-    "ramda": "^0.25.0"
+    "ramda": "^0.25.0",
+    "typescript": "^3.0.1"
   },
   "devDependencies": {
     "ts-node": "^8.6.2"
