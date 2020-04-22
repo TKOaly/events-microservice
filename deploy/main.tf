@@ -159,33 +159,34 @@ resource "aws_lb" "event_service_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = ["${aws_security_group.event_service_load_balancer_sg.id}"]
-  subnets            = ["${data.aws_subnet_ids.public_subnets.ids}"]
+  subnets            = "${data.aws_subnet_ids.public_subnets.ids}"
 
   enable_deletion_protection = true
 }
 
 resource "aws_alb_target_group" "event_service_lb_target_group" {
   name        = "cb-target-group"
-  port        = 443
+  port        = 3001
   protocol    = "HTTP"
   vpc_id      = "${data.aws_vpc.tekis_vpc.id}"
   target_type = "ip"
+
+  health_check {
+    path = "/ping"
+    matcher = 200
+  }
 }
 
 resource "aws_alb_listener" "event_service_lb_listener" {
   load_balancer_arn = "${aws_lb.event_service_lb.arn}"
-  port              = 3001
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = "${data.aws_acm_certificate.certificate.arn}"
 
   default_action {
     target_group_arn = "${aws_alb_target_group.event_service_lb_target_group.arn}"
     type             = "forward"
   }
-}
-
-resource "aws_lb_listener_certificate" "example" {
-  listener_arn    = "${aws_alb_listener.event_service_lb_listener.arn}"
-  certificate_arn = "${data.aws_acm_certificate.certificate.arn}"
 }
 
 resource "aws_cloudwatch_log_group" "event_service_cw" {
@@ -217,14 +218,14 @@ resource "aws_ecs_task_definition" "event_serivce_task" {
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${aws_cloudwatch_log_group.event_service_cw.name}",
-        "awslogs-region": "eu-central-1",
+        "awslogs-region": "eu-west-1",
         "awslogs-stream-prefix": "ecs",
         "awslogs-datetime-format": "%Y-%m-%d %H:%M:%S"
       }
     },
     "environment": [
       {"name": "SERVICE_PORT", "valueFrom": "3001"}
-    ]
+    ],
     "secrets": [
       {"name": "DB_HOST", "valueFrom": "${data.aws_ssm_parameter.event_service_db_host.arn}"},
       {"name": "DB_PORT", "valueFrom": "${data.aws_ssm_parameter.event_service_db_port.arn}"},
@@ -255,4 +256,10 @@ resource "aws_ecs_service" "event_service" {
     container_name   = "event_service_task"
     container_port   = 3001
   }
+
+  depends_on = [
+    aws_lb.event_service_lb,
+    aws_alb_listener.event_service_lb_listener,
+    aws_alb_target_group.event_service_lb_target_group
+  ]
 }
