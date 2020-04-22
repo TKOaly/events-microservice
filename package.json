@@ -23,7 +23,7 @@
     "ts-node": "^8.6.2"
   },
   "scripts": {
-    "start": "node ./dist/App.ts",
+    "start": "node ./dist/App.js",
     "start-dev": "ts-node ./src/App.ts",
     "build": "tsc"
   }
