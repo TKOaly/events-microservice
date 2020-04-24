@@ -10,5 +10,5 @@ docker push $AWS_ECR_URL:latest
 
 # Trigger ECS update
 curl https://raw.githubusercontent.com/silinternational/ecs-deploy/master/ecs-deploy | tee ./ecs-deploy
-
+chmod +x ./ecs-deploy
 ./ecs-deploy -r eu-west-1 -c christina-regina -n event-service -i $AWS_ECR_URL:latest
