@@ -54,20 +54,16 @@ data "aws_subnet_ids" "event_service_subnets" {
   }
 }
 
-data "aws_subnet_ids" "public_subnets" {
-  vpc_id = "${data.aws_vpc.tekis_vpc.id}"
-  filter {
-    name   = "tag:Name"
-    values = ["tekis-public-subnet-1a", "tekis-public-subnet-1b"]
-  }
-}
-
 data "aws_ecr_repository" "event_service_repo" {
   name = "events-service"
 }
 
 data "aws_ecs_cluster" "cluster" {
   cluster_name = "christina-regina"
+}
+
+data "aws_lb" "tekis_lb" {
+  name = "tekis-loadbalancer-1"
 }
 
 resource "aws_iam_role" "event_service_execution_role" {
@@ -135,35 +131,6 @@ resource "aws_security_group" "event_service_task_sg" {
   }
 }
 
-resource "aws_security_group" "event_service_load_balancer_sg" {
-  name   = "event-service-load-balancer-sg"
-  vpc_id = "${data.aws_vpc.tekis_vpc.id}"
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_lb" "event_service_lb" {
-  name               = "event-service-lb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = ["${aws_security_group.event_service_load_balancer_sg.id}"]
-  subnets            = "${data.aws_subnet_ids.public_subnets.ids}"
-
-  enable_deletion_protection = true
-}
-
 resource "aws_alb_target_group" "event_service_lb_target_group" {
   name        = "cb-target-group"
   port        = 3001
@@ -178,7 +145,7 @@ resource "aws_alb_target_group" "event_service_lb_target_group" {
 }
 
 resource "aws_alb_listener" "event_service_lb_listener" {
-  load_balancer_arn = "${aws_lb.event_service_lb.arn}"
+  load_balancer_arn = "${data.aws_lb.tekis_lb.arn}"
   port              = 443
   protocol          = "HTTPS"
   certificate_arn   = "${data.aws_acm_certificate.certificate.arn}"
@@ -188,6 +155,22 @@ resource "aws_alb_listener" "event_service_lb_listener" {
     type             = "forward"
   }
 }
+
+resource "aws_alb_listener_rule" "event_service_listener_rule" {
+  listener_arn = "${aws_alb_listener.event_service_lb_listener.arn}"
+
+  action {
+    type             = "forward"
+    target_group_arn = "${aws_alb_target_group.event_service_lb_target_group.arn}"
+  }
+
+  condition {
+    host_header {
+      values = ["event-api.tko-aly.fi"]
+    }
+  }
+}
+
 
 resource "aws_cloudwatch_log_group" "event_service_cw" {
   name = "/ecs/christina-regina/event-service"
@@ -258,7 +241,6 @@ resource "aws_ecs_service" "event_service" {
   }
 
   depends_on = [
-    aws_lb.event_service_lb,
     aws_alb_listener.event_service_lb_listener,
     aws_alb_target_group.event_service_lb_target_group
   ]
