@@ -7,3 +7,8 @@ echo "Pushing container image to AWS ECR"
 docker build . -t events-service
 docker tag events-service:latest $AWS_ECR_URL:latest
 docker push $AWS_ECR_URL:latest
+
+# Trigger ECS update
+curl https://raw.githubusercontent.com/silinternational/ecs-deploy/master/ecs-deploy | tee ./ecs-deploy
+
+./ecs-deploy -r eu-west-1 -c christina-regina -n event-service -i $AWS_ECR_URL:latest
