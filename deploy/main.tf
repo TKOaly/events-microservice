@@ -66,6 +66,11 @@ data "aws_lb" "tekis_lb" {
   name = "tekis-loadbalancer-1"
 }
 
+data "aws_lb_listener" "alb_listener" {
+  load_balancer_arn = "${data.aws_lb.tekis_lb.arn}"
+  port              = 443
+}
+
 resource "aws_iam_role" "event_service_execution_role" {
   name               = "event-service-execution-role"
   assume_role_policy = <<EOF
@@ -144,20 +149,8 @@ resource "aws_alb_target_group" "event_service_lb_target_group" {
   }
 }
 
-resource "aws_alb_listener" "event_service_lb_listener" {
-  load_balancer_arn = "${data.aws_lb.tekis_lb.arn}"
-  port              = 443
-  protocol          = "HTTPS"
-  certificate_arn   = "${data.aws_acm_certificate.certificate.arn}"
-
-  default_action {
-    target_group_arn = "${aws_alb_target_group.event_service_lb_target_group.arn}"
-    type             = "forward"
-  }
-}
-
 resource "aws_alb_listener_rule" "event_service_listener_rule" {
-  listener_arn = "${aws_alb_listener.event_service_lb_listener.arn}"
+  listener_arn = "${data.aws_lb_listener.alb_listener.arn}"
 
   action {
     type             = "forward"
@@ -241,7 +234,6 @@ resource "aws_ecs_service" "event_service" {
   }
 
   depends_on = [
-    aws_alb_listener.event_service_lb_listener,
     aws_alb_target_group.event_service_lb_target_group
   ]
 }
