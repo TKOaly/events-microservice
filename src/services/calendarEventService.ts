@@ -24,25 +24,40 @@ const db = knex({
     port: Number(process.env.DB_PORT),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
   },
-  client: 'mysql2'
+  client: 'mysql2',
 })
 
-export async function getAllCalendarEvents(fromDate: string): Promise<CalendarEvent[]> {
+export async function getAllCalendarEvents(
+  fromDate: string
+): Promise<CalendarEvent[]> {
   const query = db('calendar_events').select()
   if (fromDate) {
-    query.where('starts', '>=', moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')).orderBy('starts', 'asc')
+    query
+      .where(
+        'starts',
+        '>=',
+        moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
+      )
+      .orderBy('starts', 'asc')
   }
-  return query.then(result => R.map(parseQueryResult, result) as CalendarEvent[])
+  return query.then(R.map(parseQueryResult))
 }
 
-export async function getEventsForUserId(userId: number): Promise<Array<CalendarEvent & { price: string }>> {
+export async function getEventsForUserId(
+  userId: number
+): Promise<Array<CalendarEvent & { price: string }>> {
   return db
     .select('calendar_events.*')
     .from('registrations')
-    .innerJoin('calendar_events', 'calendar_events.id', '=', 'registrations.calendar_event_id')
-    .where({'registrations.user_id': userId})
+    .innerJoin(
+      'calendar_events',
+      'calendar_events.id',
+      '=',
+      'registrations.calendar_event_id'
+    )
+    .where({ 'registrations.user_id': userId })
     .then(result => R.map(parseUserEventsQueryResult, result))
 }
 
@@ -61,12 +76,14 @@ function parseQueryResult(row: any): CalendarEvent {
       'location',
       'category',
       'description',
-      'deleted'
+      'deleted',
     ],
     row
   )
 }
 
-function parseUserEventsQueryResult(row: any): CalendarEvent & { price: string } {
+function parseUserEventsQueryResult(
+  row: any
+): CalendarEvent & { price: string } {
   return { ...parseQueryResult(row), price: row.price as string }
 }
