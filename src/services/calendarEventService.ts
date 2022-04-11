@@ -37,6 +37,9 @@ export async function getAllCalendarEvents(
   // Sort by start date
   query.orderBy('starts', 'asc')
 
+  // Delete deleted events and templates
+  query.where('deleted', '0').where('template', '0')
+
   if (fromDate) {
     query.where(
       'starts',
