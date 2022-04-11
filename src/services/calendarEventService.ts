@@ -33,14 +33,16 @@ export async function getAllCalendarEvents(
   fromDate: string
 ): Promise<CalendarEvent[]> {
   const query = db('calendar_events').select()
+
+  // Sort by start date
+  query.orderBy('starts', 'asc')
+
   if (fromDate) {
-    query
-      .where(
-        'starts',
-        '>=',
-        moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
-      )
-      .orderBy('starts', 'asc')
+    query.where(
+      'starts',
+      '>=',
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
+    )
   }
   return query.then(R.map(parseQueryResult))
 }
