@@ -44,6 +44,36 @@ async function startServer(servicePort: number) {
     }
   )
 
+  app.get(
+    '/api/events/:id/registrations',
+    authorizeRequest,
+    async ({ params: { id }, res }) => {
+      try {
+        const registrations = await calendarEventService.getRegistrationsForCalendarEventId(Number(id))
+
+        return res.json(registrations)
+      } catch (e) {
+        console.error(e)
+        res.status(500).json({ error: 'internal server error' })
+      }
+    },
+  )
+
+  app.get(
+    '/api/events/:id/fields',
+    authorizeRequest,
+    async ({ params: { id }, res }) => {
+      try {
+        const fields = await calendarEventService.getCustomFieldsForCalendarEventId(Number(id))
+
+        return res.json(fields)
+      } catch (e) {
+        console.error(e)
+        res.status(500).json({ error: 'internal server error' })
+      }
+    },
+  )
+
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
   )
