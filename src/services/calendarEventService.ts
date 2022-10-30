@@ -114,7 +114,7 @@ export async function getRegistrationsForCalendarEventId(
   const registrations = await db
     .select('registrations.*', 'users.id as user_id')
     .from('registrations')
-    .join(
+    .leftJoin(
       'users',
       'users.id',
       '=',
