@@ -16,6 +16,12 @@ export interface CalendarEvent {
   category: string
   description: string
   deleted: boolean
+  organizer: EventOrganizer | null
+}
+
+export interface EventOrganizer {
+  name: string
+  url: string | null
 }
 
 const db = knex({
@@ -164,7 +170,7 @@ export async function getRegistrationsForCalendarEventId(
 }
 
 function parseQueryResult(row: any): CalendarEvent {
-  return R.pick<CalendarEvent, any>(
+  const picked = R.pick<CalendarEvent, any>(
     [
       'id',
       'name',
@@ -183,7 +189,21 @@ function parseQueryResult(row: any): CalendarEvent {
       'deleted',
     ],
     row
-  )
+  );
+
+  let organizer = null;
+
+  if (row.organizer) {
+    organizer = {
+      name: row.organizer,
+      url: row.organizer_url ?? null,
+    };
+  }
+
+  return {
+    ...picked,
+    organizer,
+  }
 }
 
 function parseUserEventsQueryResult(
