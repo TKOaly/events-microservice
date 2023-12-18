@@ -1,6 +1,7 @@
-import * as knex from 'knex'
-import * as R from 'ramda'
-import * as moment from 'moment'
+import knex from 'knex'
+import R from 'ramda'
+import moment from 'moment'
+import { parse } from 'url'
 
 export interface CalendarEvent {
   id: number
@@ -24,14 +25,18 @@ export interface EventOrganizer {
   url: string | null
 }
 
+const url = parse(process.env.DB_URL ?? '')
+const [user, password] = url.auth?.split(':') ?? []
+
+
 const db = knex({
   connection: {
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    typeCast: (field, next) => {
+    host: url.hostname,
+    port: Number(url.port),
+    user,
+    password,
+    database: url.path?.slice(1),
+    typeCast: (field: any, next: () => void) => {
       if (field.type === 'DATETIME') {
         return field.string()?.replace(' ', 'T') ?? null
       }
@@ -42,7 +47,7 @@ const db = knex({
 })
 
 export async function getAllCalendarEvents(
-  fromDate: string
+  fromDate?: string
 ): Promise<CalendarEvent[]> {
   const query = db('calendar_events').select()
 
@@ -78,22 +83,26 @@ export async function getEventsForUserId(
     .then(result => R.map(parseUserEventsQueryResult, result))
 }
 
+type Answer = { question_id: number, question: string, answer: string }
+
 type Registration = {
   user_id: number
-  answers: Array<{ question_id: number, question: string, answer: string }>,
+  answers: Array<Answer>,
 }
 
-const formatRegistrationAnswer = (answer) => ({
+type DbAnswer = { custom_field_id: number, name: string, value: string }
+
+const formatRegistrationAnswer = (answer: DbAnswer) => ({
   question_id: answer.custom_field_id,
   question: answer.name,
   answer: answer.value,
 })
 
-const formatCustomField = (custom_field) => ({
+const formatCustomField = (custom_field: any) => ({
   id: custom_field.id,
   name: custom_field.name,
   type: custom_field.type,
-  options: custom_field.options.split(';').map(option => option.trim()),
+  options: custom_field.options.split(';').map((option: string) => option.trim()),
 })
 
 type CustomField = {
@@ -191,7 +200,7 @@ function parseQueryResult(row: any): CalendarEvent {
     row
   );
 
-  let organizer = null;
+  let organizer: { name: string, url: string } | null = null;
 
   if (row.organizer) {
     organizer = {
