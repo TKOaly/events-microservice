@@ -1,8 +1,8 @@
-import * as dotenv from 'dotenv'
+import dotenv from 'dotenv'
 dotenv.config()
-import * as express from 'express'
+import express from 'express'
 import * as calendarEventService from './services/calendarEventService'
-import * as morgan from 'morgan'
+import morgan from 'morgan'
 
 async function startServer(servicePort: number) {
   const logger = morgan(':method :url :status - :response-time ms')
@@ -13,16 +13,28 @@ async function startServer(servicePort: number) {
   // Ping route
   app.get('/ping', (_, res) => res.send('Hello there'))
 
+  const authorizeRequest: express.Handler = (
+    req,
+    res,
+    next
+  ) => {
+    if (req.get('X-Token') === process.env.SERVICE_AUTH_TOKEN) {
+      return next()
+    }
+    return res.status(401).json({ error: 'unauthorized' })
+  }
+
   app.get(
     '/api/events',
-    async (req: express.Request, res: express.Response) => {
+    async (req, res) => {
       const fromDate = req.query.fromDate
       try {
         const calendarEvents = await calendarEventService.getAllCalendarEvents(
-          fromDate
+          fromDate?.toString()
         )
         return res.status(200).json(calendarEvents)
       } catch (e) {
+        console.log(e)
         res.status(500).json({ error: 'internal server error' })
       }
     }
@@ -31,10 +43,10 @@ async function startServer(servicePort: number) {
   app.get(
     '/api/users/:id/events',
     authorizeRequest,
-    async ({ params: { id } }, res) => {
+    async (req, res) => {
       try {
         const calendarEvents = await calendarEventService.getEventsForUserId(
-          Number(id)
+          Number(req.params.id)
         )
         return res.json(calendarEvents)
       } catch (e) {
@@ -47,9 +59,9 @@ async function startServer(servicePort: number) {
   app.get(
     '/api/events/:id/registrations',
     authorizeRequest,
-    async ({ params: { id }, res }) => {
+    async (req, res) => {
       try {
-        const registrations = await calendarEventService.getRegistrationsForCalendarEventId(Number(id))
+        const registrations = await calendarEventService.getRegistrationsForCalendarEventId(Number(req.params.id))
 
         return res.json(registrations)
       } catch (e) {
@@ -62,9 +74,9 @@ async function startServer(servicePort: number) {
   app.get(
     '/api/events/:id/fields',
     authorizeRequest,
-    async ({ params: { id }, res }) => {
+    async (req, res) => {
       try {
-        const fields = await calendarEventService.getCustomFieldsForCalendarEventId(Number(id))
+        const fields = await calendarEventService.getCustomFieldsForCalendarEventId(Number(req.params.id))
 
         return res.json(fields)
       } catch (e) {
@@ -77,17 +89,6 @@ async function startServer(servicePort: number) {
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
   )
-}
-
-function authorizeRequest(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  if (req.get('X-Token') === process.env.SERVICE_AUTH_TOKEN) {
-    return next()
-  }
-  return res.status(401).json({ error: 'unauthorized' })
 }
 
 startServer(Number(process.env.SERVICE_PORT || 3001))
