@@ -3,12 +3,14 @@ dotenv.config()
 import express from 'express'
 import * as calendarEventService from './services/calendarEventService'
 import morgan from 'morgan'
+import bodyParser from 'body-parser'
 
 async function startServer(servicePort: number) {
   const logger = morgan(':method :url :status - :response-time ms')
   const app = express()
 
   app.use(logger)
+  app.use(bodyParser.urlencoded({ extended: false }))
 
   // Ping route
   app.get('/ping', (_, res) => res.send('Hello there'))
@@ -88,6 +90,21 @@ async function startServer(servicePort: number) {
 
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
+  )
+
+  app.post(
+    '/api/events/add',
+    authorizeRequest,
+    async (req, res) => {
+      try {
+        const field = await calendarEventService.createCalendarEvent(req.body)
+
+        return res.json(field)
+      } catch (e) {
+        console.error(e)
+        res.status(500).json({ error: 'internal server error' })
+      }
+    },
   )
 }
 

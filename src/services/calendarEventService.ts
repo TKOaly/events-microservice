@@ -28,7 +28,7 @@ export interface EventOrganizer {
 const db = knex(config.production)
 
 export async function getAllCalendarEvents(
-  fromDate?: string
+  fromDate?: string,
 ): Promise<CalendarEvent[]> {
   const query = db('calendar_events').select()
 
@@ -42,14 +42,14 @@ export async function getAllCalendarEvents(
     query.where(
       'starts',
       '>=',
-      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
     )
   }
   return query.then(r => r.map(parseQueryResult))
 }
 
 export async function getEventsForUserId(
-  userId: number
+  userId: number,
 ): Promise<Array<CalendarEvent & { price: string }>> {
   return db
     .select('calendar_events.*')
@@ -58,7 +58,7 @@ export async function getEventsForUserId(
       'calendar_events',
       'calendar_events.id',
       '=',
-      'registrations.calendar_event_id'
+      'registrations.calendar_event_id',
     )
     .where({ 'registrations.user_id': userId })
     .then(result => result.map(parseUserEventsQueryResult))
@@ -96,7 +96,7 @@ type CustomField = {
 }
 
 export async function getCustomFieldsForCalendarEventId(
-  eventId: number
+  eventId: number,
 ): Promise<Array<CustomField>> {
   const fields = await db
     .select('custom_fields.*')
@@ -107,7 +107,7 @@ export async function getCustomFieldsForCalendarEventId(
 }
 
 export async function getRegistrationsForCalendarEventId(
-  eventId: number
+  eventId: number,
 ): Promise<Array<Registration>> {
   const registrations = await db
     .select('registrations.*', 'users.id as user_id')
@@ -120,19 +120,19 @@ export async function getRegistrationsForCalendarEventId(
       'custom_field_answers.value',
       'custom_field_answers.registration_id',
       'custom_fields.name',
-      'custom_fields.id as custom_field_id'
+      'custom_fields.id as custom_field_id',
     )
     .from('custom_field_answers')
     .join(
       'custom_fields',
       'custom_fields.id',
       '=',
-      'custom_field_answers.custom_field_id'
+      'custom_field_answers.custom_field_id',
     )
     .where(
       'custom_field_answers.registration_id',
       'IN',
-      registrations.map(r => r.id)
+      registrations.map(r => r.id),
     )
 
   const answersByRegistrationId = new Map()
@@ -195,7 +195,59 @@ function parseQueryResult(row: any): CalendarEvent {
 }
 
 function parseUserEventsQueryResult(
-  row: any
+  row: any,
 ): CalendarEvent & { price: string } {
   return { ...parseQueryResult(row), price: row.price as string }
+}
+
+export async function createCalendarEvent(props: {
+  name: string // Looks weird on absence
+  user_id: number | null
+  created: Date | null
+  starts: Date // members.tko-aly.fi throws error on absence
+  registration_starts: Date | null
+  registration_ends: Date | null // If registration_starts is given but not _ends, members throws error
+  cancellation_starts: Date | null
+  cancellation_ends: Date | null
+  location: string | null
+  category: string | null
+  description: string | null
+  price: string | null
+  map: string | null
+  membership_required: boolean | null
+  outsiders_allowed: boolean | null
+  template: boolean // members.tko-aly.fi won't render on absence
+  responsible: string | null
+  show_responsible: boolean | null
+  avec: boolean | null
+  deleted: boolean // members.tko-aly.fi won't render on absence
+  alcohol_meter: number | null
+}): Promise<knex.Knex.QueryBuilder<any, number[]>> {
+  const calendarEvent = {
+    name: props.name,
+    user_id: props.user_id,
+    created: props.created,
+    starts: props.starts,
+    registration_starts: props.registration_starts,
+    registration_ends: props.registration_ends,
+    cancellation_starts: props.cancellation_starts,
+    cancellation_ends: props.cancellation_ends,
+    location: props.location,
+    category: props.category,
+    description: props.description,
+    price: props.price,
+    map: props.map,
+    membership_required: props.membership_required,
+    outsiders_allowed: props.outsiders_allowed,
+    template: props.template,
+    responsible: props.responsible,
+    show_responsible: props.show_responsible,
+    avec: props.avec,
+    deleted: props.deleted,
+    alcohol_meter: props.alcohol_meter,
+  }
+
+  const query = db('calendar_events').insert(calendarEvent)
+
+  return query
 }
