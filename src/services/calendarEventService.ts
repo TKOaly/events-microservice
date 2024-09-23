@@ -1,5 +1,5 @@
 import knex from 'knex'
-import { pick, map } from 'remeda'
+import { pick, map, prop } from 'remeda'
 import moment from 'moment'
 import { parse } from 'url'
 
@@ -219,4 +219,58 @@ function parseUserEventsQueryResult(
   row: any
 ): CalendarEvent & { price: string } {
   return { ...parseQueryResult(row), price: row.price as string }
+}
+
+export async function createCalendarEvent(
+  props: {
+    name: string, // Looks weird on absence
+    user_id: number | null,
+    created: Date | null,
+    starts: Date, // members.tko-aly.fi throws error on absence
+    registration_starts: Date | null,
+    registration_ends: Date | null, // If registration_starts is given but not _ends, members throws error
+    cancellation_starts: Date | null,
+    cancellation_ends: Date | null,
+    location: string | null,
+    category: string | null,
+    description: string | null,
+    price: string | null,
+    map: string | null,
+    membership_required: boolean | null,
+    outsiders_allowed: boolean | null,
+    template: boolean, // members.tko-aly.fi won't render on absence
+    responsible: string | null,
+    show_responsible: boolean | null,
+    avec: boolean | null,
+    deleted: boolean, // members.tko-aly.fi won't render on absence
+    alcohol_meter: number | null,
+  }
+): Promise<knex.Knex.QueryBuilder<any, number[]>> {
+  const calendarEvent = {
+    name: props.name,
+    user_id: props.user_id,
+    created: props.created,
+    starts: props.starts,
+    registration_starts: props.registration_starts,
+    registration_ends: props.registration_ends,
+    cancellation_starts: props.cancellation_starts,
+    cancellation_ends: props.cancellation_ends,
+    location: props.location,
+    category: props.category,
+    description: props.description,
+    price: props.price,
+    map: props.map,
+    membership_required: props.membership_required,
+    outsiders_allowed: props.outsiders_allowed,
+    template: props.template,
+    responsible: props.responsible,
+    show_responsible: props.show_responsible,
+    avec: props.avec,
+    deleted: props.deleted,
+    alcohol_meter: props.alcohol_meter,
+  }
+
+  const query = db('calendar_events').insert(calendarEvent)
+
+    return query
 }
