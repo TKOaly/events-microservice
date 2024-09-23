@@ -1,7 +1,7 @@
 import knex from 'knex'
-import { pick, map } from 'remeda'
+import { config } from '../../knexfile'
+import { pick } from 'remeda'
 import moment from 'moment'
-import { parse } from 'url'
 
 export interface CalendarEvent {
   id: number
@@ -25,26 +25,7 @@ export interface EventOrganizer {
   url: string | null
 }
 
-const url = parse(process.env.DB_URL ?? '')
-const [user, password] = url.auth?.split(':') ?? []
-
-
-const db = knex({
-  connection: {
-    host: url.hostname ?? '',
-    port: Number(url.port),
-    user,
-    password,
-    database: url.path?.slice(1),
-    typeCast: (field: any, next: () => void) => {
-      if (field.type === 'DATETIME') {
-        return field.string()?.replace(' ', 'T') ?? null
-      }
-      return next()
-    },
-  },
-  client: 'mysql2',
-})
+const db = knex(config.production)
 
 export async function getAllCalendarEvents(
   fromDate?: string
@@ -83,14 +64,14 @@ export async function getEventsForUserId(
     .then(result => result.map(parseUserEventsQueryResult))
 }
 
-type Answer = { question_id: number, question: string, answer: string }
+type Answer = { question_id: number; question: string; answer: string }
 
 type Registration = {
   user_id: number
-  answers: Array<Answer>,
+  answers: Array<Answer>
 }
 
-type DbAnswer = { custom_field_id: number, name: string, value: string }
+type DbAnswer = { custom_field_id: number; name: string; value: string }
 
 const formatRegistrationAnswer = (answer: DbAnswer) => ({
   question_id: answer.custom_field_id,
@@ -102,7 +83,9 @@ const formatCustomField = (custom_field: any) => ({
   id: custom_field.id,
   name: custom_field.name,
   type: custom_field.type,
-  options: custom_field.options.split(';').map((option: string) => option.trim()),
+  options: custom_field.options
+    .split(';')
+    .map((option: string) => option.trim()),
 })
 
 type CustomField = {
@@ -118,7 +101,7 @@ export async function getCustomFieldsForCalendarEventId(
   const fields = await db
     .select('custom_fields.*')
     .from('custom_fields')
-    .where('custom_fields.calendar_event_id', '=', eventId);
+    .where('custom_fields.calendar_event_id', '=', eventId)
 
   return fields.map(formatCustomField)
 }
@@ -129,12 +112,7 @@ export async function getRegistrationsForCalendarEventId(
   const registrations = await db
     .select('registrations.*', 'users.id as user_id')
     .from('registrations')
-    .leftJoin(
-      'users',
-      'users.id',
-      '=',
-      'registrations.user_id'
-    )
+    .leftJoin('users', 'users.id', '=', 'registrations.user_id')
     .where('registrations.calendar_event_id', eventId)
 
   const answers = await db
@@ -149,21 +127,25 @@ export async function getRegistrationsForCalendarEventId(
       'custom_fields',
       'custom_fields.id',
       '=',
-      'custom_field_answers.custom_field_id',
+      'custom_field_answers.custom_field_id'
     )
-    .where('custom_field_answers.registration_id', 'IN', registrations.map(r => r.id))
+    .where(
+      'custom_field_answers.registration_id',
+      'IN',
+      registrations.map(r => r.id)
+    )
 
-  const answersByRegistrationId = new Map();
+  const answersByRegistrationId = new Map()
 
-  answers.forEach((answer) => {
+  answers.forEach(answer => {
     if (!answersByRegistrationId.has(answer.registration_id)) {
-      answersByRegistrationId.set(answer.registration_id, [answer]);
+      answersByRegistrationId.set(answer.registration_id, [answer])
     } else {
-      answersByRegistrationId.get(answer.registration_id).push(answer);
+      answersByRegistrationId.get(answer.registration_id).push(answer)
     }
   })
 
-  return registrations.map((registration) => {
+  return registrations.map(registration => {
     const answers = answersByRegistrationId.get(registration.id) ?? []
 
     return {
@@ -179,34 +161,31 @@ export async function getRegistrationsForCalendarEventId(
 }
 
 function parseQueryResult(row: any): CalendarEvent {
-  const picked = pick(
-    row,
-    [
-      'id',
-      'name',
-      'user_id',
-      'price',
-      'created',
-      'starts',
-      'registration_starts',
-      'registration_ends',
-      'cancellation_starts',
-      'cancellation_ends',
-      'organizer',
-      'location',
-      'category',
-      'description',
-      'deleted',
-    ],
-  );
+  const picked = pick(row, [
+    'id',
+    'name',
+    'user_id',
+    'price',
+    'created',
+    'starts',
+    'registration_starts',
+    'registration_ends',
+    'cancellation_starts',
+    'cancellation_ends',
+    'organizer',
+    'location',
+    'category',
+    'description',
+    'deleted',
+  ])
 
-  let organizer: { name: string, url: string } | null = null;
+  let organizer: { name: string; url: string } | null = null
 
   if (row.organizer) {
     organizer = {
       name: row.organizer,
       url: row.organizer_url ?? null,
-    };
+    }
   }
 
   return {

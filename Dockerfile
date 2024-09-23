@@ -5,6 +5,7 @@ COPY yarn.lock ./
 COPY package.json ./
 COPY tsconfig.json ./
 COPY src ./src
+COPY knexfile.ts ./
 RUN yarn
 
 RUN yarn build

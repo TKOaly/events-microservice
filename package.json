@@ -26,5 +26,6 @@
     "start": "node ./dist/App.js",
     "start-dev": "ts-node ./src/App.ts",
     "build": "tsc"
-  }
+  },
+  "packageManager": "yarn@1.22.19"
 }
