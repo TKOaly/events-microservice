@@ -6,6 +6,8 @@ COPY package.json ./
 COPY tsconfig.json ./
 COPY src ./src
 COPY knexfile.ts ./
+COPY migrations ./migrations
+
 RUN yarn
 
 RUN yarn build

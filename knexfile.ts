@@ -6,7 +6,7 @@ if (!process.env.DB_URL) {
 
 const DB_URL = new URL(process.env.DB_URL)
 
-export const config: Record<string, Knex.Config> = {
+const config: { [key: string]: Knex.Config } = {
   production: {
     client: 'mysql2',
     connection: {
@@ -15,7 +15,7 @@ export const config: Record<string, Knex.Config> = {
       user: DB_URL.username,
       password: DB_URL.password,
       database: DB_URL.pathname.slice(1),
-      typeCast: (field: any, next: () => unknown) => {
+      typeCast: (field, next) => {
         if (field.type === 'DATETIME') {
           return field.string()?.replace(' ', 'T') ?? null
         }
@@ -23,7 +23,10 @@ export const config: Record<string, Knex.Config> = {
       },
     },
     migrations: {
-      tableName: 'knex_migrations',
+      tableName: 'knex_migrations_events',
     },
   },
 }
+
+module.exports = config
+export default config
