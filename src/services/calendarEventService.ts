@@ -2,6 +2,7 @@ import knex from 'knex'
 import config from '../../knexfile'
 import { pick } from 'remeda'
 import moment from 'moment'
+import type { NewCalendarEventInput } from '../schemas/calendarEvent'
 
 export interface CalendarEvent {
   id: number
@@ -200,54 +201,10 @@ function parseUserEventsQueryResult(
   return { ...parseQueryResult(row), price: row.price as string }
 }
 
-export async function createCalendarEvent(props: {
-  name: string // Looks weird on absence
-  user_id: number | null
-  created: Date | null
-  starts: Date // members.tko-aly.fi throws error on absence
-  registration_starts: Date | null
-  registration_ends: Date | null // If registration_starts is given but not _ends, members throws error
-  cancellation_starts: Date | null
-  cancellation_ends: Date | null
-  location: string | null
-  category: string | null
-  description: string | null
-  price: string | null
-  map: string | null
-  membership_required: boolean | null
-  outsiders_allowed: boolean | null
-  template: boolean // members.tko-aly.fi won't render on absence
-  responsible: string | null
-  show_responsible: boolean | null
-  avec: boolean | null
-  deleted: boolean // members.tko-aly.fi won't render on absence
-  alcohol_meter: number | null
-}): Promise<knex.Knex.QueryBuilder<any, number[]>> {
-  const calendarEvent = {
-    name: props.name,
-    user_id: props.user_id,
-    created: props.created,
-    starts: props.starts,
-    registration_starts: props.registration_starts,
-    registration_ends: props.registration_ends,
-    cancellation_starts: props.cancellation_starts,
-    cancellation_ends: props.cancellation_ends,
-    location: props.location,
-    category: props.category,
-    description: props.description,
-    price: props.price,
-    map: props.map,
-    membership_required: props.membership_required,
-    outsiders_allowed: props.outsiders_allowed,
-    template: props.template,
-    responsible: props.responsible,
-    show_responsible: props.show_responsible,
-    avec: props.avec,
-    deleted: props.deleted,
-    alcohol_meter: props.alcohol_meter,
-  }
-
-  const query = db('calendar_events').insert(calendarEvent)
+export async function createCalendarEvent(
+  event: NewCalendarEventInput,
+): Promise<knex.Knex.QueryBuilder<any, number[]>> {
+  const query = db('calendar_events').insert(event)
 
   return query
 }
