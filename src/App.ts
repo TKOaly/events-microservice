@@ -90,6 +90,7 @@ async function startServer(servicePort: number) {
   app.post(
     '/api/events',
     express.json(),
+    authorizeRequest,
     async (req, res) => {
         const event = calendarEventService.PostEvent.safeParse(req.body);
         if (!event.success) {
@@ -105,6 +106,7 @@ async function startServer(servicePort: number) {
   app.put(
     '/api/events/:id',
     express.json(),
+    authorizeRequest,
     async (req, res) => {
       const event = calendarEventService.PostEvent.safeParse(req.body);
       if (!event.success) {
