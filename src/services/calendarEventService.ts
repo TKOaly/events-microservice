@@ -2,7 +2,9 @@ import knex from 'knex'
 import config from '../../knexfile'
 import { pick } from 'remeda'
 import moment from 'moment'
+import * as z from 'zod'
 
+// ikävä interface, ei kata kaikkia rivejä tietokannassa
 export interface CalendarEvent {
   id: number
   name: string
@@ -19,6 +21,32 @@ export interface CalendarEvent {
   deleted: boolean
   organizer: EventOrganizer | null
 }
+
+export const PostEvent = z.object ({
+  user_id: z.number().optional(),
+  name: z.string(),
+  created: z.date().optional(),
+  starts: z.date().optional(),
+  registration_starts: z.date().optional(),
+  registration_ends: z.date().optional(),
+  cancellation_starts: z.date().optional(),
+  cancellation_ends: z.date().optional(),
+  location: z.string().optional(),
+  category: z.string().optional(),
+  description: z.string().optional(),
+  alcohol_meter: z.number().optional(),
+  price: z.string().optional(),
+  map: z.string().optional(),
+  max_participants: z.number().optional(),
+  realised_participants: z.number().optional(),
+  membership_required: z.boolean().optional(),
+  outsiders_allowed: z.boolean().optional(),
+  template: z.boolean().optional(),
+  responsible: z.string().optional(),
+  show_responsible: z.boolean().optional(),
+  avec: z.boolean().optional(),
+  deleted: z.boolean()
+});
 
 export interface EventOrganizer {
   name: string

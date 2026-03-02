@@ -3,6 +3,7 @@ dotenv.config()
 import express from 'express'
 import * as calendarEventService from './services/calendarEventService'
 import morgan from 'morgan'
+import * as z from 'zod'
 
 async function startServer(servicePort: number) {
   const logger = morgan(':method :url :status - :response-time ms')
@@ -84,6 +85,20 @@ async function startServer(servicePort: number) {
         res.status(500).json({ error: 'internal server error' })
       }
     },
+  )
+
+  app.post(
+    '/api/events',
+    express.json(),
+    async (req, res) => {
+        const eventData = calendarEventService.PostEvent.safeParse(req.body);
+        if (!eventData.success) {
+          const err = z.prettifyError(eventData.error);
+          return res.send(err);
+        } else {
+          return res.send(eventData.data)
+        }
+      }
   )
 
   app.listen(servicePort, () =>
