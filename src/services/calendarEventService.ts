@@ -25,12 +25,12 @@ export interface CalendarEvent {
 export const PostEvent = z.object ({
   user_id: z.number().optional(),
   name: z.string(),
-  created: z.date().optional(),
-  starts: z.date().optional(),
-  registration_starts: z.date().optional(),
-  registration_ends: z.date().optional(),
-  cancellation_starts: z.date().optional(),
-  cancellation_ends: z.date().optional(),
+  created: z.coerce.date().optional(),
+  starts: z.coerce.date().optional(),
+  registration_starts: z.coerce.date().optional(),
+  registration_ends: z.coerce.date().optional(),
+  cancellation_starts: z.coerce.date().optional(),
+  cancellation_ends: z.coerce.date().optional(),
   location: z.string().optional(),
   category: z.string().optional(),
   description: z.string().optional(),
@@ -39,14 +39,16 @@ export const PostEvent = z.object ({
   map: z.string().optional(),
   max_participants: z.number().optional(),
   realised_participants: z.number().optional(),
-  membership_required: z.boolean().optional(),
-  outsiders_allowed: z.boolean().optional(),
-  template: z.boolean().optional(),
+  membership_required: z.coerce.boolean().optional(),
+  outsiders_allowed: z.coerce.boolean().optional(),
+  template: z.coerce.boolean().optional(),
   responsible: z.string().optional(),
-  show_responsible: z.boolean().optional(),
-  avec: z.boolean().optional(),
-  deleted: z.boolean()
+  show_responsible: z.coerce.boolean().optional(),
+  avec: z.coerce.boolean().optional(),
+  deleted: z.coerce.boolean().optional(),
 });
+
+type PostEvent = z.infer<typeof PostEvent>;
 
 export interface EventOrganizer {
   name: string
@@ -74,6 +76,15 @@ export async function getAllCalendarEvents(
     )
   }
   return query.then(r => r.map(parseQueryResult))
+}
+
+export const addNewEvent = async (event: PostEvent): Promise<number> => {
+  return await db('calendar_events').insert(event, 'id')
+}
+
+export const updateEvent = async (id: number, event: PostEvent): Promise<number> => {
+  await db('calendar_events').where("id", id).update(event)
+  return id
 }
 
 export async function getEventsForUserId(

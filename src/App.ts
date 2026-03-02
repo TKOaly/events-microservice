@@ -91,16 +91,36 @@ async function startServer(servicePort: number) {
     '/api/events',
     express.json(),
     async (req, res) => {
-        const eventData = calendarEventService.PostEvent.safeParse(req.body);
-        if (!eventData.success) {
-          const err = z.prettifyError(eventData.error);
+        const event = calendarEventService.PostEvent.safeParse(req.body);
+        if (!event.success) {
+          const err = z.prettifyError(event.error);
           return res.send(err);
         } else {
-          return res.send(eventData.data)
+          const result = await calendarEventService.addNewEvent(event.data)
+          return res.status(201).json({id: result})
         }
       }
   )
 
+  app.put(
+    '/api/events/:id',
+    express.json(),
+    async (req, res) => {
+      const event = calendarEventService.PostEvent.safeParse(req.body);
+      if (!event.success) {
+        const err = z.prettifyError(event.error);
+        return res.send(err);
+      } else {
+        const id = parseInt(req.params.id)
+        if (Number.isNaN(id)) {
+          return res.status(400).json({error: "Bad Request"})
+        }
+        const result = await calendarEventService.updateEvent(id, event.data)
+        return res.status(200).json({id: result})
+      }
+    }
+  )
+  
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
   )
