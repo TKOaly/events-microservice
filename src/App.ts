@@ -3,6 +3,7 @@ dotenv.config()
 import express from 'express'
 import * as calendarEventService from './services/calendarEventService'
 import morgan from 'morgan'
+import * as z from 'zod'
 
 async function startServer(servicePort: number) {
   const logger = morgan(':method :url :status - :response-time ms')
@@ -86,6 +87,54 @@ async function startServer(servicePort: number) {
     },
   )
 
+  app.post(
+    '/api/events',
+    express.json(),
+    authorizeRequest,
+    async (req, res) => {
+        const event = calendarEventService.EventSchema.safeParse(req.body);
+        if (!event.success) {
+          const err = z.prettifyError(event.error);
+          return res.status(400).send(err);
+        } else {
+          try {
+            const result = await calendarEventService.addNewEvent(event.data)
+            return res.status(201).json({ id: result })
+          } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: 'internal server error' });
+          };
+        }
+      }
+  );
+
+  app.put(
+    '/api/events/:id',
+    express.json(),
+    authorizeRequest,
+    async (req, res) => {
+      const event = calendarEventService.EventSchema.safeParse(req.body);
+      if (!event.success) {
+        const err = z.prettifyError(event.error);
+        return res.status(400).send(err);
+      } else {
+        try {
+          const id = parseInt(req.params.id)
+          if (Number.isNaN(id)) {
+            return res.status(404).json({ error: "Not Found" })
+          } else if (!await calendarEventService.isExistingEvent(id)) {
+            return res.status(404).json({ error: "ID Not Found" })
+          }
+          const result = await calendarEventService.updateEvent(id, event.data)
+          return res.status(200).json({ id: result })
+        } catch (e) {
+          console.error(e)
+          return res.status(500).json({ error: "internal server error" })
+        }
+      }
+    }
+  )
+  
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
   )
