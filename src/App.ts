@@ -92,7 +92,7 @@ async function startServer(servicePort: number) {
     express.json(),
     // authorizeRequest,
     async (req, res) => {
-        const event = calendarEventService.PostEvent.safeParse(req.body);
+        const event = calendarEventService.EventSchema.safeParse(req.body);
         if (!event.success) {
           const err = z.prettifyError(event.error);
           return res.status(400).send(err);
@@ -108,7 +108,7 @@ async function startServer(servicePort: number) {
     express.json(),
     // authorizeRequest,
     async (req, res) => {
-      const event = calendarEventService.PostEvent.safeParse(req.body);
+      const event = calendarEventService.EventSchema.safeParse(req.body);
       if (!event.success) {
         const err = z.prettifyError(event.error);
         return res.status(400).send(err);

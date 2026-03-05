@@ -22,7 +22,7 @@ export interface CalendarEvent {
   organizer: EventOrganizer | null
 }
 
-export const PostEvent = z.object ({
+export const EventSchema = z.object ({
   user_id:                z.number().optional(),
   name:                   z.string(),
   created:                z.coerce.date().optional(),
@@ -48,7 +48,7 @@ export const PostEvent = z.object ({
   deleted:                z.coerce.boolean().optional(),
 });
 
-type PostEvent = z.infer<typeof PostEvent>;
+type Event = z.infer<typeof EventSchema>;
 
 export interface EventOrganizer {
   name: string
@@ -83,11 +83,11 @@ export const isExistingEvent = async (id: number): Promise<boolean> => {
   return !!res
 }
 
-export const addNewEvent = async (event: PostEvent): Promise<number> => {
+export const addNewEvent = async (event: Event): Promise<number> => {
   return await db('calendar_events').insert(event, 'id')
 }
 
-export const updateEvent = async (id: number, event: PostEvent): Promise<number> => {
+export const updateEvent = async (id: number, event: Event): Promise<number> => {
   await db('calendar_events').where("id", id).update(event)
   return id
 }
