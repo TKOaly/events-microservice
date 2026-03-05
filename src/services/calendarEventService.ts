@@ -23,29 +23,29 @@ export interface CalendarEvent {
 }
 
 export const PostEvent = z.object ({
-  user_id: z.number().optional(),
-  name: z.string(),
-  created: z.coerce.date().optional(),
-  starts: z.coerce.date().optional(),
-  registration_starts: z.coerce.date().optional(),
-  registration_ends: z.coerce.date().optional(),
-  cancellation_starts: z.coerce.date().optional(),
-  cancellation_ends: z.coerce.date().optional(),
-  location: z.string().optional(),
-  category: z.string().optional(),
-  description: z.string().optional(),
-  alcohol_meter: z.number().optional(),
-  price: z.string().optional(),
-  map: z.string().optional(),
-  max_participants: z.number().optional(),
-  realised_participants: z.number().optional(),
-  membership_required: z.coerce.boolean().optional(),
-  outsiders_allowed: z.coerce.boolean().optional(),
-  template: z.coerce.boolean().optional(),
-  responsible: z.string().optional(),
-  show_responsible: z.coerce.boolean().optional(),
-  avec: z.coerce.boolean().optional(),
-  deleted: z.coerce.boolean().optional(),
+  user_id:                z.number().optional(),
+  name:                   z.string(),
+  created:                z.coerce.date().optional(),
+  starts:                 z.coerce.date().optional(),
+  registration_starts:    z.coerce.date().optional(),
+  registration_ends:      z.coerce.date().optional(),
+  cancellation_starts:    z.coerce.date().optional(),
+  cancellation_ends:      z.coerce.date().optional(),
+  location:               z.string().optional(),
+  category:               z.string().optional(),
+  description:            z.string().optional(),
+  alcohol_meter:          z.number().optional(),
+  price:                  z.string().optional(),
+  map:                    z.string().optional(),
+  max_participants:       z.number().optional(),
+  realised_participants:  z.number().optional(),
+  membership_required:    z.coerce.boolean().optional(),
+  outsiders_allowed:      z.coerce.boolean().optional(),
+  template:               z.coerce.boolean().optional(),
+  responsible:            z.string().optional(),
+  show_responsible:       z.coerce.boolean().optional(),
+  avec:                   z.coerce.boolean().optional(),
+  deleted:                z.coerce.boolean().optional(),
 });
 
 type PostEvent = z.infer<typeof PostEvent>;
@@ -76,6 +76,11 @@ export async function getAllCalendarEvents(
     )
   }
   return query.then(r => r.map(parseQueryResult))
+}
+
+export const isExistingEvent = async (id: number): Promise<boolean> => {
+  const res = await db('calendar_events').where({ id }).select(1).first();
+  return !!res
 }
 
 export const addNewEvent = async (event: PostEvent): Promise<number> => {

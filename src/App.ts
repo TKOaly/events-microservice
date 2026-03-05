@@ -90,15 +90,15 @@ async function startServer(servicePort: number) {
   app.post(
     '/api/events',
     express.json(),
-    authorizeRequest,
+    // authorizeRequest,
     async (req, res) => {
         const event = calendarEventService.PostEvent.safeParse(req.body);
         if (!event.success) {
           const err = z.prettifyError(event.error);
-          return res.send(err);
+          return res.status(400).send(err);
         } else {
           const result = await calendarEventService.addNewEvent(event.data)
-          return res.status(201).json({id: result})
+          return res.status(201).json({ id: result })
         }
       }
   )
@@ -106,19 +106,26 @@ async function startServer(servicePort: number) {
   app.put(
     '/api/events/:id',
     express.json(),
-    authorizeRequest,
+    // authorizeRequest,
     async (req, res) => {
       const event = calendarEventService.PostEvent.safeParse(req.body);
       if (!event.success) {
         const err = z.prettifyError(event.error);
-        return res.send(err);
+        return res.status(400).send(err);
       } else {
         const id = parseInt(req.params.id)
         if (Number.isNaN(id)) {
-          return res.status(400).json({error: "Bad Request"})
+          return res.status(404).json({ error: "Not Found" })
+        } else if (!await calendarEventService.isExistingEvent(id)) {
+          return res.status(404).json({ error: "ID Not Found" })
         }
-        const result = await calendarEventService.updateEvent(id, event.data)
-        return res.status(200).json({id: result})
+        try {
+          const result = await calendarEventService.updateEvent(id, event.data)
+          return res.status(200).json({ id: result })
+        } catch (e) {
+          console.error(e)
+          return res.status(500).json({ error: "Internal Server Error" })
+        }
       }
     }
   )
