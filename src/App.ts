@@ -28,16 +28,16 @@ async function startServer(servicePort: number) {
   app.get(
     '/api/events',
     async (req, res) => {
-      const fromDate = req.query.fromDate
-      try {
-        const calendarEvents = await calendarEventService.getAllCalendarEvents(
+    const fromDate = req.query.fromDate
+    try {
+      const calendarEvents = await calendarEventService.getAllCalendarEvents(
           fromDate?.toString()
-        )
-        return res.status(200).json(calendarEvents)
-      } catch (e) {
-        console.log(e)
-        res.status(500).json({ error: 'internal server error' })
-      }
+      )
+      return res.status(200).json(calendarEvents)
+    } catch (e) {
+      console.log(e)
+      res.status(500).json({ error: 'internal server error' })
+    }
     }
   )
 
@@ -45,17 +45,39 @@ async function startServer(servicePort: number) {
     '/api/users/:id/events',
     authorizeRequest,
     async (req, res) => {
-      try {
-        const calendarEvents = await calendarEventService.getEventsForUserId(
+    try {
+      const calendarEvents = await calendarEventService.getEventsForUserId(
           Number(req.params.id)
-        )
-        return res.json(calendarEvents)
-      } catch (e) {
-        console.error(e)
-        res.status(500).json({ error: 'internal server error' })
-      }
+      )
+      return res.json(calendarEvents)
+    } catch (e) {
+      console.error(e)
+      res.status(500).json({ error: 'internal server error' })
     }
-  )
+  })
+
+  app.get('/api/events/templates', authorizeRequest, async (req, res) => {
+    try {
+      const templates = await calendarEventService.getTemplateEvents()
+      return res.json(templates)
+    } catch (e) {
+      console.error(e)
+      res.status(500).json({ error: 'internal server error' })
+    }
+  })
+
+  app.get('/api/events/:id', authorizeRequest, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id)
+      if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid ID' })
+      const event = await calendarEventService.getEventById(id)
+      if (!event) return res.status(404).json({ error: 'Not Found' })
+      return res.json(event)
+    } catch (e) {
+      console.error(e)
+      res.status(500).json({ error: 'internal server error' })
+    }
+  })
 
   app.get(
     '/api/events/:id/registrations',
@@ -76,14 +98,14 @@ async function startServer(servicePort: number) {
     '/api/events/:id/fields',
     authorizeRequest,
     async (req, res) => {
-      try {
+    try {
         const fields = await calendarEventService.getCustomFieldsForCalendarEventId(Number(req.params.id))
 
-        return res.json(fields)
-      } catch (e) {
-        console.error(e)
-        res.status(500).json({ error: 'internal server error' })
-      }
+      return res.json(fields)
+    } catch (e) {
+      console.error(e)
+      res.status(500).json({ error: 'internal server error' })
+    }
     },
   )
 
@@ -93,14 +115,14 @@ async function startServer(servicePort: number) {
     authorizeRequest,
     async (req, res) => {
         const event = calendarEventService.EventSchema.safeParse(req.body);
-        if (!event.success) {
+      if (!event.success) {
           const err = z.prettifyError(event.error);
           return res.status(400).send(err);
-        } else {
-          try {
-            const result = await calendarEventService.addNewEvent(event.data)
-            return res.status(201).json({ id: result })
-          } catch (e) {
+      } else {
+        try {
+          const result = await calendarEventService.addNewEvent(event.data)
+          return res.status(201).json({ id: result })
+        } catch (e) {
             console.error(e);
             res.status(500).json({ error: 'internal server error' });
           };
@@ -134,7 +156,7 @@ async function startServer(servicePort: number) {
       }
     }
   )
-  
+
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
   )
