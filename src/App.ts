@@ -97,11 +97,16 @@ async function startServer(servicePort: number) {
           const err = z.prettifyError(event.error);
           return res.status(400).send(err);
         } else {
-          const result = await calendarEventService.addNewEvent(event.data)
-          return res.status(201).json({ id: result })
+          try {
+            const result = await calendarEventService.addNewEvent(event.data)
+            return res.status(201).json({ id: result })
+          } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: 'internal server error' });
+          };
         }
       }
-  )
+  );
 
   app.put(
     '/api/events/:id',
@@ -113,18 +118,18 @@ async function startServer(servicePort: number) {
         const err = z.prettifyError(event.error);
         return res.status(400).send(err);
       } else {
-        const id = parseInt(req.params.id)
-        if (Number.isNaN(id)) {
-          return res.status(404).json({ error: "Not Found" })
-        } else if (!await calendarEventService.isExistingEvent(id)) {
-          return res.status(404).json({ error: "ID Not Found" })
-        }
         try {
+          const id = parseInt(req.params.id)
+          if (Number.isNaN(id)) {
+            return res.status(404).json({ error: "Not Found" })
+          } else if (!await calendarEventService.isExistingEvent(id)) {
+            return res.status(404).json({ error: "ID Not Found" })
+          }
           const result = await calendarEventService.updateEvent(id, event.data)
           return res.status(200).json({ id: result })
         } catch (e) {
           console.error(e)
-          return res.status(500).json({ error: "Internal Server Error" })
+          return res.status(500).json({ error: "internal server error" })
         }
       }
     }
