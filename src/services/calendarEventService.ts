@@ -31,6 +31,8 @@ export const EventSchema = z.object ({
   registration_ends:      z.coerce.date().optional(),
   cancellation_starts:    z.coerce.date().optional(),
   cancellation_ends:      z.coerce.date().optional(),
+  organizer:              z.string().optional(),
+  organizer_url:          z.httpUrl().optional(),
   location:               z.string().optional(),
   category:               z.string().optional(),
   description:            z.string().optional(),
@@ -47,8 +49,12 @@ export const EventSchema = z.object ({
   avec:                   z.coerce.boolean().optional(),
   deleted:                z.coerce.boolean().optional(),
 });
+export const FetchEvent = EventSchema.extend({
+  id: z.number()
+})
 
 type Event = z.infer<typeof EventSchema>;
+type FetchEvent = z.infer<typeof FetchEvent>
 
 export interface EventOrganizer {
   name: string
@@ -76,6 +82,28 @@ export async function getAllCalendarEvents(
     )
   }
   return query.then(r => r.map(parseQueryResult))
+}
+
+// Same as above, except uses the new EventSchema
+export async function getAllCalendarEventsNew(
+  fromDate?: string
+): Promise<Event[]> {
+  const query = db('calendar_events').select()
+
+  // Sort by start date
+  query.orderBy('starts', 'asc')
+
+  // Delete deleted events and templates
+  query.where('deleted', '0').where('template', '0')
+
+  if (fromDate) {
+    query.where(
+      'starts',
+      '>=',
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
+    )
+  }
+  return query.then(r => r.map(parseQueryResultNew))
 }
 
 export const isExistingEvent = async (id: number): Promise<boolean> => {
@@ -235,6 +263,41 @@ function parseQueryResult(row: any): CalendarEvent {
   return {
     ...picked,
     organizer,
+  }
+}
+
+function parseQueryResultNew(row: any): FetchEvent {
+  const picked = pick(row, [
+    'id',
+    'user_id',
+    'name',
+    'created',
+    'starts',
+    'registration_starts',
+    'registration_ends',
+    'cancellation_starts',
+    'cancellation_ends',
+    'organizer',
+    'organizer_url',
+    'location',
+    'category',
+    'description',
+    'alcohol_meter',
+    'price',
+    'map',
+    'max_participants',
+    'realised_participants',
+    'membership_required',
+    'outsiders_allowed',
+    'template',
+    'responsible',
+    'show_responsible',
+    'avec',
+    'deleted',
+  ])
+
+  return {
+    ...picked,
   }
 }
 

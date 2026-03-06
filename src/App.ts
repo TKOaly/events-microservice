@@ -87,8 +87,9 @@ async function startServer(servicePort: number) {
     },
   )
 
+  // Below are the API routes used by the new website
   app.post(
-    '/api/events',
+    '/api/events-new',
     express.json(),
     authorizeRequest,
     async (req, res) => {
@@ -109,7 +110,7 @@ async function startServer(servicePort: number) {
   );
 
   app.put(
-    '/api/events/:id',
+    '/api/events-new/:id',
     express.json(),
     authorizeRequest,
     async (req, res) => {
@@ -134,6 +135,24 @@ async function startServer(servicePort: number) {
       }
     }
   )
+  
+  
+  app.get(
+    '/api/events-new',
+    async (req, res) => {
+      const fromDate = req.query.fromDate
+      try {
+        const fetchedEvents = await calendarEventService.getAllCalendarEventsNew(
+          fromDate?.toString()
+        )
+        return res.status(200).json(fetchedEvents)
+      } catch (e) {
+        console.log(e)
+        res.status(500).json({ error: 'internal server error' })
+      }
+    }
+  )
+  // New website end
   
   app.listen(servicePort, () =>
     console.log('App listining on port', servicePort)
