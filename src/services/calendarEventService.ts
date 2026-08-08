@@ -78,12 +78,7 @@ export async function getAllCalendarEvents(
   return query.then(r => r.map(parseQueryResult))
 }
 
-export interface CalendarListEvent {
-  id: number
-  name: string
-  registration_starts: Date
-  registration_ends: Date
-}
+export type CalendarListEvent = Pick<CalendarEvent, 'id' | 'name' | 'registration_starts' | 'registration_ends'>
 
 export async function getAllCalendarEventsForEventList(
   fromDate?: string,
