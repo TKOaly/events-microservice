@@ -45,7 +45,7 @@ Get users all registrations
 
 ### `/api/event_list`
 ### GET
-Get event data for event list
+Get subset of event data for websites calender/event list functionally
 
 ## License
 
