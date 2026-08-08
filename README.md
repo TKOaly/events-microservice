@@ -43,7 +43,7 @@ Get event registrations custom fields
 ### GET
 Get users all registrations
 
-### `/api/eventlist`
+### `/api/event_list`
 ### GET
 Get event data for event list
 

@@ -95,7 +95,7 @@ async function startServer(servicePort: number) {
   )
 
   app.get(
-    '/api/eventlist',
+    '/api/event_list',
     async (req, res) => {
     const fromDate = req.query.fromDate
     try {
