@@ -78,7 +78,15 @@ export async function getAllCalendarEvents(
   return query.then(r => r.map(parseQueryResult))
 }
 
-export type CalendarListEvent = Pick<CalendarEvent, 'id' | 'name' | 'registration_starts' | 'registration_ends'>
+export type CalendarListEvent = Pick<
+  CalendarEvent,
+  | 'id'
+  | 'name'
+  | 'location'
+  | 'starts'
+  | 'registration_starts'
+  | 'registration_ends'
+>
 
 export async function getAllCalendarEventsForEventList(
   fromDate?: string,
@@ -86,6 +94,8 @@ export async function getAllCalendarEventsForEventList(
   const query = db('calendar_events').select<CalendarListEvent[]>(
     'calendar_events.id',
     'calendar_events.name',
+    'calendar_events.location',
+    'calendar_events.starts',
     'calendar_events.registration_starts',
     'calendar_events.registration_ends',
   )
