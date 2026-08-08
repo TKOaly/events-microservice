@@ -95,6 +95,22 @@ async function startServer(servicePort: number) {
   )
 
   app.get(
+    '/api/eventlist',
+    async (req, res) => {
+    const fromDate = req.query.fromDate
+    try {
+      const calendarEvents = await calendarEventService.getAllCalendarEventsForEventList(
+          fromDate?.toString()
+      )
+      return res.status(200).json(calendarEvents)
+    } catch (e) {
+      console.log(e)
+      res.status(500).json({ error: 'internal server error' })
+    }
+    }
+  )
+
+  app.get(
     '/api/events/:id/fields',
     authorizeRequest,
     async (req, res) => {

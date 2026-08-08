@@ -72,10 +72,44 @@ export async function getAllCalendarEvents(
     query.where(
       'starts',
       '>=',
-      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
     )
   }
   return query.then(r => r.map(parseQueryResult))
+}
+
+export interface CalendarListEvent {
+  id: number
+  name: string
+  registration_starts: Date
+  registration_ends: Date
+}
+
+export async function getAllCalendarEventsForEventList(
+  fromDate?: string,
+): Promise<CalendarListEvent[]> {
+  const query = db('calendar_events').select<CalendarListEvent[]>(
+    'calendar_events.id',
+    'calendar_events.name',
+    'calendar_events.registration_starts',
+    'calendar_events.registration_ends',
+  )
+
+  // Sort by start date
+  query.orderBy('starts', 'asc')
+
+  // Delete deleted events and templates
+  query.where('deleted', '0').where('template', '0')
+
+  if (fromDate) {
+    query.where(
+      'starts',
+      '>=',
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
+    )
+  }
+
+  return query
 }
 
 export interface TemplateEventFull {
