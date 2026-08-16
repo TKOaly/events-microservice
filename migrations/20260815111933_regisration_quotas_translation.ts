@@ -4,9 +4,9 @@ import type { Knex } from 'knex'
  * Up: Creates table `registration_quota_translation`
  */
 export async function up(knex: Knex): Promise<void> {
-  if (!await knex.schema.hasTable('registration_quota_translation')) {
+  if (!await knex.schema.hasTable('registration_quotas_translation')) {
     knex.schema.createTable(
-      'registration_quota_translation',
+      'registration_quotas_translation',
       table => {
         table
           .foreign('registration_quota_id')
