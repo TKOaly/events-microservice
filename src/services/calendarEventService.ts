@@ -4,46 +4,51 @@ import { pick } from 'remeda'
 import moment from 'moment'
 
 export interface Event {
-  id?: number
+  id: number
   name?: string
+  user_id?: number
   created?: Date
   starts?: Date
   registration_starts?: Date
   registration_ends?: Date
   cancellation_starts?: Date
   cancellation_ends?: Date
+  alcohol_meter?: number
   location?: string
   category?: string
-  description?: string
-  alcohol_meter?: number
   price?: string
   map_link?: string
   membership_required?: boolean
   outsiders_allowed?: boolean
-  template?: boolean
   responsible?: string
   show_responsible?: boolean
-  organizer?: EventOrganizer
   avec?: boolean
-}
-
-export interface EventOrganizer {
-  name: string
-  url: string | null
 }
 
 const db = knex(config.production)
 
 export async function getAllCalendarEvents(
-  fromDate?: string
-): Promise<CalendarEvent[]> {
-  const query = db('calendar_events').select()
+  locale: string,
+  fromDate?: string,
+): Promise<Event[]> {
+  let query = db('events')
+
+  query = selectEventColumns(query, true)
+  query = addTranslations(query, 'events', locale, [
+    'title as name',
+    'description',
+  ])
+  query = addEventCategory(query, 'events', locale, { category: true })
+  query = addLocation(query, 'events', locale, {
+    location: true,
+    map_link: true,
+  })
 
   // Sort by start date
   query.orderBy('starts', 'asc')
 
   // Delete deleted events and templates
-  query.where('deleted', '0').where('template', '0')
+  query.where('deleted', false).where('template', false)
 
   if (fromDate) {
     query.where(
@@ -52,11 +57,12 @@ export async function getAllCalendarEvents(
       moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
     )
   }
-  return query.then(r => r.map(parseQueryResult))
+
+  return query
 }
 
-export type CalendarListEvent = Pick<
-  CalendarEvent,
+export type ListEvent = Pick<
+  Event,
   | 'id'
   | 'name'
   | 'location'
@@ -66,22 +72,24 @@ export type CalendarListEvent = Pick<
 >
 
 export async function getAllCalendarEventsForEventList(
+  locale: string,
   fromDate?: string,
-): Promise<CalendarListEvent[]> {
-  const query = db('calendar_events').select<CalendarListEvent[]>(
-    'calendar_events.id',
-    'calendar_events.name',
-    'calendar_events.location',
-    'calendar_events.starts',
-    'calendar_events.registration_starts',
-    'calendar_events.registration_ends',
+): Promise<ListEvent[]> {
+  let query = db('events').select<ListEvent[]>(
+    'events.id',
+    'events.starts',
+    'events.registration_starts',
+    'events.registration_ends',
   )
+
+  query = addTranslations(query, 'events', locale, ['title as name'])
+  query = addLocation(query, 'events', locale, { location: true })
 
   // Sort by start date
   query.orderBy('starts', 'asc')
 
   // Delete deleted events and templates
-  query.where('deleted', '0').where('template', '0')
+  query.where('deleted', false).where('template', false)
 
   if (fromDate) {
     query.where(
@@ -141,7 +149,7 @@ function parseTemplateQueryResult(row: any): TemplateEventFull {
 }
 
 export async function getTemplateEvents(): Promise<TemplateEventFull[]> {
-  return db('calendar_events')
+  return db('events')
     .select()
     .where('deleted', '0')
     .where('template', '1')
@@ -149,45 +157,62 @@ export async function getTemplateEvents(): Promise<TemplateEventFull[]> {
     .then(r => r.map(parseTemplateQueryResult))
 }
 
-export async function getEventById(
-  id: number,
-): Promise<TemplateEventFull | null> {
-  const row = await db('calendar_events')
-    .where({ id })
-    .whereNot('deleted', 1)
-    .first()
-  if (!row) return null
-  return parseTemplateQueryResult(row)
+export async function getEventById(id: number, locale: string): Promise<Event> {
+  let query = db('events')
+
+  query = selectEventColumns(query, false)
+  query = addTranslations(query, 'events', locale, [
+    'title as name',
+    'description',
+  ])
+  query = addEventCategory(query, 'events', locale, { category: true })
+  query = addLocation(query, 'events', locale, {
+    location: true,
+    map_link: true,
+  })
+
+  query.where({ id }).where('deleted', false)
+
+  return query.first()
 }
 
 export const isExistingEvent = async (id: number): Promise<boolean> => {
-  const res = await db('calendar_events').where({ id }).select(1).first();
+  const res = await db('events').where({ id }).select(1).first()
   return !!res
 }
 
 export const addNewEvent = async (event: Event): Promise<number> => {
-  return await db('calendar_events').insert(event, 'id')
+  return await db('events').insert(event, 'id')
 }
 
-export const updateEvent = async (id: number, event: Event): Promise<number> => {
-  await db('calendar_events').where("id", id).update(event)
+export const updateEvent = async (
+  id: number,
+  event: Event,
+): Promise<number> => {
+  await db('events').where('id', id).update(event)
   return id
 }
 
 export async function getEventsForUserId(
-  userId: number
-): Promise<Array<CalendarEvent & { price: string }>> {
-  return db
-    .select('calendar_events.*')
-    .from('registrations')
-    .innerJoin(
-      'calendar_events',
-      'calendar_events.id',
-      '=',
-      'registrations.calendar_event_id'
-    )
+  userId: number,
+  locale: string,
+): Promise<Event[]> {
+  let query = db('registration')
+    .innerJoin('events', 'events.id', '=', 'registrations.calendar_event_id')
     .where({ 'registrations.user_id': userId })
-    .then(result => result.map(parseUserEventsQueryResult))
+
+  query = selectEventColumns(query, true)
+  query = addTranslations(query, 'events', locale, [
+    'title as name',
+    'description',
+  ])
+  query = addEventCategory(query, 'events', locale, { category: true })
+  query = addLocation(query, 'events', locale, {
+    location: true,
+    map_link: true,
+  })
+
+  return query
 }
 
 type Answer = { question_id: number; question: string; answer: string }
@@ -222,7 +247,7 @@ type CustomField = {
 }
 
 export async function getCustomFieldsForCalendarEventId(
-  eventId: number
+  eventId: number,
 ): Promise<Array<CustomField>> {
   const fields = await db
     .select('custom_fields.*')
@@ -233,7 +258,7 @@ export async function getCustomFieldsForCalendarEventId(
 }
 
 export async function getRegistrationsForCalendarEventId(
-  eventId: number
+  eventId: number,
 ): Promise<Array<Registration>> {
   const registrations = await db
     .select('registrations.*', 'users.id as user_id')
@@ -246,19 +271,19 @@ export async function getRegistrationsForCalendarEventId(
       'custom_field_answers.value',
       'custom_field_answers.registration_id',
       'custom_fields.name',
-      'custom_fields.id as custom_field_id'
+      'custom_fields.id as custom_field_id',
     )
     .from('custom_field_answers')
     .join(
       'custom_fields',
       'custom_fields.id',
       '=',
-      'custom_field_answers.custom_field_id'
+      'custom_field_answers.custom_field_id',
     )
     .where(
       'custom_field_answers.registration_id',
       'IN',
-      registrations.map(r => r.id)
+      registrations.map(r => r.id),
     )
 
   const answersByRegistrationId = new Map()
@@ -385,42 +410,50 @@ function addLocation(
   return query
 }
 
-function parseQueryResult(row: any): Event {
-  const picked = pick(row, [
-    'id',
-    'name',
-    'user_id',
-    'price',
-    'created',
-    'starts',
-    'registration_starts',
-    'registration_ends',
-    'cancellation_starts',
-    'cancellation_ends',
-    'organizer',
-    'location',
-    'category',
-    'description',
-    'deleted',
-  ])
-
-  let organizer: { name: string; url: string } | null = null
-
-  if (row.organizer) {
-    organizer = {
-      name: row.organizer,
-      url: row.organizer_url ?? null,
-    }
+function selectEventColumns(query: Knex.QueryBuilder, isArray: boolean) {
+  if (isArray) {
+    query.select<Event[]>(
+      'events.id',
+      'events.user_id',
+      'events.created',
+      'events.starts',
+      'events.registration_starts',
+      'events.registration_ends',
+      'events.cancellation_starts',
+      'events.cancellation_ends',
+      'events.alcohol_meter',
+      'events.location',
+      'events.category',
+      'events.price',
+      'events.map_link',
+      'events.membership_required',
+      'events.outsiders_allowed',
+      'events.responsible',
+      'events.show_responsible',
+      'events.avec',
+    )
+  } else {
+    query.select<Event>(
+      'events.id',
+      'events.user_id',
+      'events.created',
+      'events.starts',
+      'events.registration_starts',
+      'events.registration_ends',
+      'events.cancellation_starts',
+      'events.cancellation_ends',
+      'events.alcohol_meter',
+      'events.location',
+      'events.category',
+      'events.price',
+      'events.map_link',
+      'events.membership_required',
+      'events.outsiders_allowed',
+      'events.responsible',
+      'events.show_responsible',
+      'events.avec',
+    )
   }
 
-  return {
-    ...picked,
-    organizer,
-  }
-}
-
-function parseUserEventsQueryResult(
-  row: any
-): CalendarEvent & { price: string } {
-  return { ...parseQueryResult(row), price: row.price as string }
+  return query
 }
