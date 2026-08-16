@@ -1,14 +1,16 @@
-import type { Knex } from "knex";
+import type { Knex } from 'knex'
 
 /**
  * Up: Creates table `event_types`
  */
 export async function up(knex: Knex): Promise<void> {
-  knex.schema.createTableIfNotExists('event_types', (table) => {
-    table.bigIncrements('id').unsigned().primary();
-    table.tinyint('implicit_alcohol_meter', 2).nullable();
-    table.boolean('deleted').defaultTo(false)
-  })
+  if (!await knex.schema.hasTable('event_types')) {
+    knex.schema.createTable('event_types', table => {
+      table.bigIncrements('id').unsigned().primary()
+      table.tinyint('implicit_alcohol_meter', 2).nullable()
+      table.boolean('deleted').defaultTo(false)
+    })
+  }
 }
 
 /**
