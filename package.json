@@ -16,8 +16,7 @@
     "morgan": "1.10.0",
     "pg": "^8.23.0",
     "remeda": "1.31.0",
-    "typescript": "5.3.3",
-    "zod": "4.3.6"
+    "typescript": "5.3.3"
   },
   "devDependencies": {
     "@types/morgan": "^1.9.9",

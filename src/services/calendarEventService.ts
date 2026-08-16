@@ -1,54 +1,31 @@
-import knex from 'knex'
+import { knex, Knex } from 'knex'
 import config from '../../knexfile'
 import { pick } from 'remeda'
 import moment from 'moment'
-import * as z from 'zod'
 
-// ikävä interface, ei kata kaikkia rivejä tietokannassa
-export interface CalendarEvent {
-  id: number
-  name: string
-  user_id: number
-  created: Date
-  starts: Date
-  registration_starts: Date
-  registration_ends: Date
-  cancellation_starts: Date
-  cancellation_ends: Date
-  location: string
-  category: string
-  description: string
-  deleted: boolean
-  organizer: EventOrganizer | null
+export interface Event {
+  id?: number
+  name?: string
+  created?: Date
+  starts?: Date
+  registration_starts?: Date
+  registration_ends?: Date
+  cancellation_starts?: Date
+  cancellation_ends?: Date
+  location?: string
+  category?: string
+  description?: string
+  alcohol_meter?: number
+  price?: string
+  map_link?: string
+  membership_required?: boolean
+  outsiders_allowed?: boolean
+  template?: boolean
+  responsible?: string
+  show_responsible?: boolean
+  organizer?: EventOrganizer
+  avec?: boolean
 }
-
-export const EventSchema = z.object ({
-  user_id:                z.number().optional(),
-  name:                   z.string(),
-  created:                z.coerce.date().optional(),
-  starts:                 z.coerce.date().optional(),
-  registration_starts:    z.coerce.date().optional(),
-  registration_ends:      z.coerce.date().optional(),
-  cancellation_starts:    z.coerce.date().optional(),
-  cancellation_ends:      z.coerce.date().optional(),
-  location:               z.string().optional(),
-  category:               z.string().optional(),
-  description:            z.string().optional(),
-  alcohol_meter:          z.number().optional(),
-  price:                  z.string().optional(),
-  map:                    z.string().optional(),
-  max_participants:       z.number().optional(),
-  realised_participants:  z.number().optional(),
-  membership_required:    z.coerce.boolean().optional(),
-  outsiders_allowed:      z.coerce.boolean().optional(),
-  template:               z.coerce.boolean().optional(),
-  responsible:            z.string().optional(),
-  show_responsible:       z.coerce.boolean().optional(),
-  avec:                   z.coerce.boolean().optional(),
-  deleted:                z.coerce.boolean().optional(),
-});
-
-type Event = z.infer<typeof EventSchema>;
 
 export interface EventOrganizer {
   name: string
