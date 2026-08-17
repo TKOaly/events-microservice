@@ -1,19 +1,61 @@
-import { db } from './db';
-import { CustomField, DbAnswer } from './types';
+import { db } from './db'
+import { CustomField } from './types'
+import { addTranslations } from './utils'
 
-
-export async function getCustomFieldsForCalendarEventId(
-  eventId: number
+export async function getAllCustomFieldsForCalendarEventId(
+  eventId: number,
+  locale: string,
 ): Promise<CustomField[]> {
-  const fields = await db
-    .select<CustomField[]>('custom_fields.')
-    .from('custom_fields')
-    .where('custom_fields.calendar_event_id', '=', eventId)
+  const query = db('custom_fields')
 
-    return fields.map(formatCustomField)
+  const queryWithTranslations = addTranslations(
+    query,
+    'custom_fields',
+    locale,
+    ['name'],
+  )
+
+  queryWithTranslations.where('custom_fields.event_id', eventId)
+
+  let rows = await queryWithTranslations.select(
+    'custom_fields.id',
+    'custom_fields.type',
+    'custom_fields.options',
+    'custom_fields.required',
+  )
+
+  return rows.map(formatCustomField)
 }
 
-export function formatCustomField(row: any) {
+export async function getCustomFieldsForCalendarEventIdAndRegistrationQuotaId(
+  eventId: number,
+  registrationQuotaId: number,
+  locale: string,
+): Promise<CustomField[]> {
+  const query = db('custom_fields')
+
+  const queryWithTranslations = addTranslations(
+    query,
+    'custom_fields',
+    locale,
+    ['name'],
+  )
+
+  queryWithTranslations
+    .where('custom_fields.event_id', eventId)
+    .whereIn('custom_fields.registration_quota_id', [registrationQuotaId, null])
+
+  let rows = await queryWithTranslations.select(
+    'custom_fields.id',
+    'custom_fields.type',
+    'custom_fields.options',
+    'custom_fields.required',
+  )
+
+  return rows.map(formatCustomField)
+}
+
+function formatCustomField(row: any) {
   return {
     id: row.id,
     name: row.name,
