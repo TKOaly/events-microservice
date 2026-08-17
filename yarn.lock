@@ -748,11 +748,6 @@ rechoir@^0.8.0:
   dependencies:
     resolve "^1.20.0"
 
-remeda@1.31.0:
-  version "1.31.0"
-  resolved "https://registry.yarnpkg.com/remeda/-/remeda-1.31.0.tgz#cfa1f2c9094f5fcb081435a9c0a5d1e1332e067d"
-  integrity sha512-nRoIO0E/3Ruuq4LO4szkGfOGXstB2KbroMqjFRcNA2pBN594AMzRKqY347NIf7WIslIxbQ1cKBpUkQxUgmoxuQ==
-
 resolve-from@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-5.0.0.tgz#c35225843df8f776df21c57557bc087e9dfdfc69"

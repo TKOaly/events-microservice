@@ -1,7 +1,10 @@
 import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express'
-import * as calendarEventService from './services/calendarEventService'
+import * as calendarEventService from './services/utils'
+import * as getRegistrationsForCalendarEventId from './services/getRegistrationsForCalendarEventId'
+import * as events from './services/events'
+import * as Registration from './services/Registration'
 import morgan from 'morgan'
 import * as z from 'zod'
 
@@ -30,7 +33,7 @@ async function startServer(servicePort: number) {
     async (req, res) => {
     const fromDate = req.query.fromDate
     try {
-      const calendarEvents = await calendarEventService.getAllCalendarEvents(
+      const calendarEvents = await events.getAllCalendarEvents(
           fromDate?.toString()
       )
       return res.status(200).json(calendarEvents)
@@ -46,7 +49,7 @@ async function startServer(servicePort: number) {
     authorizeRequest,
     async (req, res) => {
     try {
-      const calendarEvents = await calendarEventService.getEventsForUserId(
+      const calendarEvents = await events.getEventsForUserId(
           Number(req.params.id)
       )
       return res.json(calendarEvents)
@@ -70,7 +73,7 @@ async function startServer(servicePort: number) {
     try {
       const id = parseInt(req.params.id)
       if (Number.isNaN(id)) return res.status(400).json({ error: 'Invalid ID' })
-      const event = await calendarEventService.getEventById(id)
+      const event = await events.getEventById(id)
       if (!event) return res.status(404).json({ error: 'Not Found' })
       return res.json(event)
     } catch (e) {
@@ -84,7 +87,7 @@ async function startServer(servicePort: number) {
     authorizeRequest,
     async (req, res) => {
       try {
-        const registrations = await calendarEventService.getRegistrationsForCalendarEventId(Number(req.params.id))
+        const registrations = await getRegistrationsForCalendarEventId.getRegistrationsForCalendarEventId(Number(req.params.id))
 
         return res.json(registrations)
       } catch (e) {
@@ -99,7 +102,7 @@ async function startServer(servicePort: number) {
     async (req, res) => {
     const fromDate = req.query.fromDate
     try {
-      const calendarEvents = await calendarEventService.getAllCalendarEventsForEventList(
+      const calendarEvents = await events.getAllCalendarEventsForEventList(
           fromDate?.toString()
       )
       return res.status(200).json(calendarEvents)
@@ -115,7 +118,7 @@ async function startServer(servicePort: number) {
     authorizeRequest,
     async (req, res) => {
     try {
-        const fields = await calendarEventService.getCustomFieldsForCalendarEventId(Number(req.params.id))
+        const fields = await Registration.getCustomFieldsForCalendarEventId(Number(req.params.id))
 
       return res.json(fields)
     } catch (e) {
@@ -136,7 +139,7 @@ async function startServer(servicePort: number) {
           return res.status(400).send(err);
       } else {
         try {
-          const result = await calendarEventService.addNewEvent(event.data)
+          const result = await events.addNewEvent(event.data)
           return res.status(201).json({ id: result })
         } catch (e) {
             console.error(e);
@@ -160,10 +163,10 @@ async function startServer(servicePort: number) {
           const id = parseInt(req.params.id)
           if (Number.isNaN(id)) {
             return res.status(404).json({ error: "Not Found" })
-          } else if (!await calendarEventService.isExistingEvent(id)) {
+          } else if (!await events.isExistingEvent(id)) {
             return res.status(404).json({ error: "ID Not Found" })
           }
-          const result = await calendarEventService.updateEvent(id, event.data)
+          const result = await events.updateEvent(id, event.data)
           return res.status(200).json({ id: result })
         } catch (e) {
           console.error(e)
