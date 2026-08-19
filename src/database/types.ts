@@ -1,29 +1,3 @@
-export type CustomField = {
-  id: number
-  registration_quota_id?: number
-  name: string
-  type: 'textarea' | 'radio' | 'checkbox' | 'text'
-  options?: string[]
-  required?: boolean
-}
-
-export type Answer = {
-  question_id: number
-  question: string
-  answer: string
-}
-
-export type Registration = {
-  user_id: number
-  answers: Array<Answer>
-}
-
-export type DbAnswer = {
-  custom_field_id: number
-  name: string
-  value: string
-}
-
 export interface Event {
   id: number
   title?: string
@@ -55,6 +29,43 @@ export type ListEvent = Pick<
   | 'registration_starts'
   | 'registration_ends'
 >
+
+export type CustomField = {
+  id: number
+  registration_quota_id?: number
+  name: string
+  type: 'textarea' | 'radio' | 'checkbox' | 'text'
+  options?: string[]
+  required?: boolean
+}
+
+export type CustomFieldAnswer = {
+  question_id: number
+  question: string
+  answer: string
+}
+
+export type Registration = {
+  user_id?: number,
+  name: string
+  email: string
+  phone: string
+  customFieldAnswers?: CustomFieldAnswer[]
+  avecRegistration?: Registration
+}
+
+export type RegistrationRow = {
+  registration_id: number
+  user_id: number
+  name: string
+  email: string
+  phone: string
+  avec_registration_id: number
+  avec_name: string
+  avec_email: string
+  avec_phone: string
+}
+
 
 export type EventTemplateTitle = Pick<Event, 'id' | 'title'>
 

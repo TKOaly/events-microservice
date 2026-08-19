@@ -64,11 +64,3 @@ function formatCustomField(row: any) {
     required: row.required,
   }
 }
-
-export function formatRegistrationAnswer(row: DbAnswer) {
-  return {
-    question_id: row.custom_field_id,
-    question: row.name,
-    answer: row.value,
-  }
-}
