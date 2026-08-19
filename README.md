@@ -43,6 +43,10 @@ Get event registrations custom fields
 ### GET
 Get users all registrations
 
+### `/api/event_list`
+### GET
+Get subset of event data for websites calender/event list functionally
+
 ## License
 
 MIT license

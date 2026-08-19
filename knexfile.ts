@@ -8,7 +8,7 @@ const DB_URL = new URL(process.env.DB_URL)
 
 const config: { [key: string]: Knex.Config } = {
   production: {
-    client: 'mysql2',
+    client: 'postgresql',
     connection: {
       host: DB_URL.hostname,
       port: Number(DB_URL.port),
@@ -23,7 +23,7 @@ const config: { [key: string]: Knex.Config } = {
       },
     },
     migrations: {
-      tableName: 'knex_migrations_events',
+      tableName: 'knex_migrations',
     },
   },
 }
