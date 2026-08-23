@@ -120,7 +120,7 @@ function formatRegistration(
 
 export function formatRegistrationAnswer(row: any): CustomFieldAnswer {
   return {
-    question_id: row.custom_field_id,
+    id: row.custom_field_id,
     question: row.name,
     answer: row.value,
   }

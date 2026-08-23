@@ -1,6 +1,7 @@
 export interface Event {
   id: number
   title?: string
+  description?: string
   user_id?: number
   created?: Date
   starts?: Date
@@ -30,6 +31,12 @@ export type ListEvent = Pick<
   | 'registration_ends'
 >
 
+export type EventTranslation = {
+  title: string
+  description: string
+  locale: string
+}
+
 export type CustomField = {
   id: number
   registration_quota_id?: number
@@ -40,13 +47,28 @@ export type CustomField = {
 }
 
 export type CustomFieldAnswer = {
-  question_id: number
+  id: number
   question: string
   answer: string
 }
 
+export type CustomFieldTemplate = Pick<
+  CustomField,
+  | 'registration_quota_id'
+  | 'type'
+  | 'options'
+  | 'required'
+> & {
+  translations: Translation[]
+}
+
+export type Translation = {
+  locale: string,
+  name: string
+}
+
 export type Registration = {
-  user_id?: number,
+  user_id?: number
   name: string
   email: string
   phone: string
@@ -66,7 +88,23 @@ export type RegistrationRow = {
   avec_phone: string
 }
 
-
 export type EventTemplateTitle = Pick<Event, 'id' | 'title'>
 
-export type EventTemplate = Event & { custom_fields: CustomField[] }
+export type EventTemplate = Pick<
+  Event,
+  | 'starts'
+  | 'registration_starts'
+  | 'registration_ends'
+  | 'cancellation_starts'
+  | 'cancellation_ends'
+  | 'alcohol_meter'
+  | 'price'
+  | 'membership_required'
+  | 'outsiders_allowed'
+  | 'responsible'
+  | 'show_responsible'
+  | 'avec'
+> & {
+  eventTranslations?: EventTranslation[]
+  customFieldTemplates?: CustomFieldTemplate[]
+}
