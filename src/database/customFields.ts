@@ -24,7 +24,7 @@ export async function getAllCustomFieldsForCalendarEventId(
     'custom_fields.required',
   )
 
-  return rows.map(formatCustomField)
+  return rows
 }
 
 export async function getCustomFieldsForCalendarEventIdAndRegistrationQuotaId(
@@ -52,23 +52,5 @@ export async function getCustomFieldsForCalendarEventIdAndRegistrationQuotaId(
     'custom_fields.required',
   )
 
-  return rows.map(formatCustomField)
-}
-
-function formatCustomField(row: any) {
-  return {
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    options: row.options.split(';').map((option: string) => option.trim()),
-    required: row.required,
-  }
-}
-
-export function formatRegistrationAnswer(row: DbAnswer) {
-  return {
-    question_id: row.custom_field_id,
-    question: row.name,
-    answer: row.value,
-  }
+  return rows
 }

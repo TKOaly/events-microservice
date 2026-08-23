@@ -1,6 +1,5 @@
 import { db } from './db';
-import { Registration } from './types';
-import { formatRegistrationAnswer } from './customFlieds';
+import { DbAnswer, Registration } from './types';
 
 
 export async function getRegistrationsForCalendarEventId(
@@ -55,4 +54,11 @@ export async function getRegistrationsForCalendarEventId(
       answers: answers.map(formatRegistrationAnswer),
     };
   });
+}
+export function formatRegistrationAnswer(row: DbAnswer) {
+  return {
+    question_id: row.custom_field_id,
+    question: row.name,
+    answer: row.value,
+  }
 }
