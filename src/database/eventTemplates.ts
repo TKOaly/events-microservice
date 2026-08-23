@@ -53,6 +53,10 @@ export async function getEventTemplate(id: number): Promise<EventTemplate> {
   }
 }
 
+export async function deleteEventTemplate(id: number) {
+  db('events').where('events.id', id).update({ template: false })
+}
+
 async function getEventTranslations(
   event_id: number,
 ): Promise<EventTranslation[]> {
