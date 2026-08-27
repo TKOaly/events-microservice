@@ -26,7 +26,7 @@ export async function getUsersRegistrationForEvent(
   return formatRegistration(row, customFields, avecCustomFields)
 }
 
-export async function getRegistrationsForCalendarEventId(
+export async function getAllRegistrationsForEvent(
   eventId: number,
   locale: string,
 ): Promise<Registration[]> {
