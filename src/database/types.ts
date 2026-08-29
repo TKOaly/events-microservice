@@ -54,16 +54,13 @@ export type CustomFieldAnswer = {
 
 export type CustomFieldTemplate = Pick<
   CustomField,
-  | 'registration_quota_id'
-  | 'type'
-  | 'options'
-  | 'required'
+  'registration_quota_id' | 'type' | 'options' | 'required'
 > & {
   translations: Translation[]
 }
 
 export type Translation = {
-  locale: string,
+  locale: string
   name: string
 }
 
@@ -107,4 +104,18 @@ export type EventTemplate = Pick<
 > & {
   eventTranslations?: EventTranslation[]
   customFieldTemplates?: CustomFieldTemplate[]
+}
+
+export type EventTypeRow = {
+  id: number
+  implicit_alcohol_meter: number
+}
+
+export type EventType = EventTypeRow & {
+  eventTypeTranslations: EventTypeTranslation[]
+}
+
+export type EventTypeTranslation = {
+  locale: string
+  event_type: string
 }
