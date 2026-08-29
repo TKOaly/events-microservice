@@ -1,129 +1,130 @@
-import moment from 'moment';
-import { addTranslations, addEventCategory, addLocation } from './utils';
-import { db } from './db';
-import { Event, ListEvent } from './types';
-import { Knex } from 'knex';
-
+import moment from 'moment'
+import { addTranslations, addEventCategory, addLocation } from './utils'
+import { db } from './db'
+import { Event, ListEvent } from './types'
+import { Knex } from 'knex'
 
 export async function getAllCalendarEvents(
   locale: string,
-  fromDate?: string
+  fromDate?: string,
 ): Promise<Event[]> {
-  let query = db('events');
+  let query = db('events')
 
-  query = selectEventColumns(query, true);
+  query = selectEventColumns(query, true)
   query = addTranslations(query, 'events', locale, [
     'title as name',
     'description',
-  ]);
-  query = addEventCategory(query, 'events', locale, { category: true });
+  ])
+  query = addEventCategory(query, 'events', locale, { category: true })
   query = addLocation(query, 'events', locale, {
     location: true,
     map_link: true,
-  });
+  })
 
   // Sort by start date
-  query.orderBy('starts', 'asc');
+  query.orderBy('starts', 'asc')
 
   // Delete deleted events and templates
-  query.where('deleted', false).where('template', false);
+  query.where('deleted', false).where('template', false)
 
   if (fromDate) {
     query.where(
       'starts',
       '>=',
-      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
-    );
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
+    )
   }
 
-  return query;
+  return query
 }
 
 export async function getAllCalendarEventsForEventList(
   locale: string,
-  fromDate?: string
+  fromDate?: string,
 ): Promise<ListEvent[]> {
   let query = db('events').select<ListEvent[]>(
     'events.id',
     'events.starts',
     'events.registration_starts',
-    'events.registration_ends'
-  );
+    'events.registration_ends',
+  )
 
-  query = addTranslations(query, 'events', locale, ['title as name']);
-  query = addLocation(query, 'events', locale, { location: true });
+  query = addTranslations(query, 'events', locale, ['title as name'])
+  query = addLocation(query, 'events', locale, { location: true })
 
   // Sort by start date
-  query.orderBy('starts', 'asc');
+  query.orderBy('starts', 'asc')
 
   // Delete deleted events and templates
-  query.where('deleted', false).where('template', false);
+  query.where('deleted', false).where('template', false)
 
   if (fromDate) {
     query.where(
       'starts',
       '>=',
-      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
-    );
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
+    )
   }
 
-  return query;
+  return query
 }
 
 export async function getEventById(id: number, locale: string): Promise<Event> {
-  let query = db('events');
+  let query = db('events')
 
-  query = selectEventColumns(query, false);
-  query = addTranslations(query, 'events', locale, ['title', 'description']);
-  query = addEventCategory(query, 'events', locale, { category: true });
+  query = selectEventColumns(query, false)
+  query = addTranslations(query, 'events', locale, ['title', 'description'])
+  query = addEventCategory(query, 'events', locale, { category: true })
   query = addLocation(query, 'events', locale, {
     location: true,
     map_link: true,
-  });
+  })
 
-  query.where({ id }).where('deleted', false);
+  query.where({ id }).where('deleted', false)
 
-  return query.first();
+  return query.first()
 }
 
 export async function getEventsForUserId(
   userId: number,
-  locale: string
+  locale: string,
 ): Promise<Event[]> {
   let query = db('registration')
     .innerJoin('events', 'events.id', '=', 'registrations.calendar_event_id')
-    .where({ 'registrations.user_id': userId });
+    .where({ 'registrations.user_id': userId })
 
-  query = selectEventColumns(query, true);
+  query = selectEventColumns(query, true)
   query = addTranslations(query, 'events', locale, [
     'title as name',
     'description',
-  ]);
-  query = addEventCategory(query, 'events', locale, { category: true });
+  ])
+  query = addEventCategory(query, 'events', locale, { category: true })
   query = addLocation(query, 'events', locale, {
     location: true,
     map_link: true,
-  });
+  })
 
-  return query;
+  return query
 }
 
 export const isExistingEvent = async (id: number): Promise<boolean> => {
-  const res = await db('events').where({ id }).select(1).first();
-  return !!res;
-};
+  const res = await db('events').where({ id }).select(1).first()
+  return !!res
+}
 
 export const addNewEvent = async (event: Event): Promise<number> => {
-  return await db('events').insert(event, 'id');
-};
+  return await db('events').insert(event, 'id')
+}
 
 export const updateEvent = async (
   id: number,
-  event: Event
+  event: Event,
 ): Promise<number> => {
-  await db('events').where('id', id).update(event);
-  return id;
-};export function selectEventColumns(query: Knex.QueryBuilder, isArray: boolean) {
+  await db('events').where('id', id).update(event)
+  return id
+}
+
+export function selectEventColumns(query: Knex.QueryBuilder, isArray: boolean) {
   if (isArray) {
     query.select<Event[]>(
       'events.id',
@@ -143,7 +144,7 @@ export const updateEvent = async (
       'events.outsiders_allowed',
       'events.responsible',
       'events.show_responsible',
-      'events.avec'
+      'events.avec',
     )
   } else {
     query.select<Event>(
@@ -164,10 +165,9 @@ export const updateEvent = async (
       'events.outsiders_allowed',
       'events.responsible',
       'events.show_responsible',
-      'events.avec'
+      'events.avec',
     )
   }
 
   return query
 }
-
