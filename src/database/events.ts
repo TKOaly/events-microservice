@@ -10,7 +10,7 @@ export async function getAllCalendarEvents(
 ): Promise<Event[]> {
   let query = db('events')
 
-  query = selectEventColumns(query, true)
+  query = selectEventColumns(query)
   query = addTranslations(query, 'events', locale, [
     'title as name',
     'description',
@@ -72,7 +72,7 @@ export async function getAllCalendarEventsForEventList(
 export async function getEventById(id: number, locale: string): Promise<Event> {
   let query = db('events')
 
-  query = selectEventColumns(query, false)
+  query = selectEventColumns(query)
   query = addTranslations(query, 'events', locale, ['title', 'description'])
   query = addEventCategory(query, 'events', locale, { category: true })
   query = addLocation(query, 'events', locale, {
@@ -93,7 +93,7 @@ export async function getEventsForUserId(
     .innerJoin('events', 'events.id', '=', 'registrations.calendar_event_id')
     .where({ 'registrations.user_id': userId })
 
-  query = selectEventColumns(query, true)
+  query = selectEventColumns(query)
   query = addTranslations(query, 'events', locale, [
     'title as name',
     'description',
@@ -124,50 +124,27 @@ export const updateEvent = async (
   return id
 }
 
-export function selectEventColumns(query: Knex.QueryBuilder, isArray: boolean) {
-  if (isArray) {
-    query.select<Event[]>(
-      'events.id',
-      'events.user_id',
-      'events.created',
-      'events.starts',
-      'events.registration_starts',
-      'events.registration_ends',
-      'events.cancellation_starts',
-      'events.cancellation_ends',
-      'events.alcohol_meter',
-      'events.location',
-      'events.category',
-      'events.price',
-      'events.map_link',
-      'events.membership_required',
-      'events.outsiders_allowed',
-      'events.responsible',
-      'events.show_responsible',
-      'events.avec',
-    )
-  } else {
-    query.select<Event>(
-      'events.id',
-      'events.user_id',
-      'events.created',
-      'events.starts',
-      'events.registration_starts',
-      'events.registration_ends',
-      'events.cancellation_starts',
-      'events.cancellation_ends',
-      'events.alcohol_meter',
-      'events.location',
-      'events.category',
-      'events.price',
-      'events.map_link',
-      'events.membership_required',
-      'events.outsiders_allowed',
-      'events.responsible',
-      'events.show_responsible',
-      'events.avec',
-    )
-  }
+export function selectEventColumns(query: Knex.QueryBuilder) {
+  query.select(
+    'events.id',
+    'events.user_id',
+    'events.created',
+    'events.starts',
+    'events.registration_starts',
+    'events.registration_ends',
+    'events.cancellation_starts',
+    'events.cancellation_ends',
+    'events.alcohol_meter',
+    'events.location',
+    'events.category',
+    'events.price',
+    'events.map_link',
+    'events.membership_required',
+    'events.outsiders_allowed',
+    'events.responsible',
+    'events.show_responsible',
+    'events.avec',
+  )
 
   return query
 }
