@@ -119,3 +119,17 @@ export type EventTypeTranslation = {
   locale: string
   event_type: string
 }
+
+export type LocationRow = {
+  id: number
+  map_link?: string
+}
+
+export type Location = LocationRow & {
+  locationTranslations: LocationTranslation[]
+}
+
+export type LocationTranslation = {
+  locale: string
+  location: string
+}
