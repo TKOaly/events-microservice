@@ -5,7 +5,7 @@ export async function getAllEventTypes(): Promise<EventType[]> {
   const query = db('event_types')
 
   query.select('event_types.id', 'event_types.implicit_alcohol_meter')
-  
+
   query.where('event_types.deleted', false)
 
   const rows: EventTypeRow[] = await query
@@ -17,6 +17,47 @@ export async function getAllEventTypes(): Promise<EventType[]> {
       eventTypeTranslations: await getEventTypeTranslations(row.id),
     })),
   )
+}
+
+export const isExistingEventType = async (id: number): Promise<boolean> => {
+  const result = await db('event_types').where({ id }).select(1).first()
+  return !!result
+}
+
+/**
+ * @returns event type id
+ */
+export async function insertEventType(eventType: EventType): Promise<number> {
+  const query = db('event_types')
+
+  const row: EventType = await query.insert({
+    implicit_alcohol_meter: eventType.implicit_alcohol_meter,
+  })
+
+  await Promise.all(
+    eventType.eventTypeTranslations.map(translation => {
+      insertEventTypeTranslationIfNotExits(row.id, translation)
+    }),
+  )
+
+  return row.id
+}
+
+export async function insertEventTypeTranslationIfNotExits(
+  event_type_id: number,
+  translation: EventTypeTranslation,
+) {
+  const query = db('event_translations')
+
+  query.insert({
+    event_type_id: event_type_id,
+    locale: translation.locale,
+    event_type: translation.event_type,
+  })
+
+  query.onConflict(['event_type_id', 'locale']).ignore()
+
+  await query
 }
 
 async function getEventTypeTranslations(

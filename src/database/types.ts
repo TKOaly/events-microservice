@@ -108,7 +108,7 @@ export type EventTemplate = Pick<
 
 export type EventTypeRow = {
   id: number
-  implicit_alcohol_meter: number
+  implicit_alcohol_meter?: number
 }
 
 export type EventType = EventTypeRow & {
