@@ -108,11 +108,11 @@ export async function getEventsForUserId(
 }
 
 export const isExistingEvent = async (id: number): Promise<boolean> => {
-  const res = await db('events').where({ id }).select(1).first()
-  return !!res
+  const result = await db('events').where({ id }).select(1).first()
+  return !!result
 }
 
-export const addNewEvent = async (event: Event): Promise<number> => {
+export const insertEvent = async (event: Event): Promise<number> => {
   return await db('events').insert(event, 'id')
 }
 
@@ -130,20 +130,12 @@ export function selectEventColumns(query: Knex.QueryBuilder) {
     'events.user_id',
     'events.created',
     'events.starts',
-    'events.registration_starts',
-    'events.registration_ends',
-    'events.cancellation_starts',
-    'events.cancellation_ends',
     'events.alcohol_meter',
-    'events.location',
-    'events.category',
     'events.price',
-    'events.map_link',
-    'events.membership_required',
-    'events.outsiders_allowed',
     'events.responsible',
     'events.show_responsible',
-    'events.avec',
+    'events.weekly_event',
+    'events.weekly_event_end_time',
   )
 
   return query
