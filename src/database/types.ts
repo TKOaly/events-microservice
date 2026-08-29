@@ -5,31 +5,19 @@ export interface Event {
   user_id?: number
   created?: Date
   starts?: Date
-  registration_starts?: Date
-  registration_ends?: Date
-  cancellation_starts?: Date
-  cancellation_ends?: Date
   alcohol_meter?: number
   location?: string
   category?: string
   price?: string
   map_link?: string
-  membership_required?: boolean
   outsiders_allowed?: boolean
   responsible?: string
   show_responsible?: boolean
-  avec?: boolean
+  weekly_event?: boolean
+  weekly_event_end_time?: Date
 }
 
-export type ListEvent = Pick<
-  Event,
-  | 'id'
-  | 'title'
-  | 'location'
-  | 'starts'
-  | 'registration_starts'
-  | 'registration_ends'
->
+export type ListEvent = Pick<Event, 'id' | 'title' | 'location' | 'starts'>
 
 export type EventTranslation = {
   title: string
@@ -90,17 +78,12 @@ export type EventTemplateTitle = Pick<Event, 'id' | 'title'>
 export type EventTemplate = Pick<
   Event,
   | 'starts'
-  | 'registration_starts'
-  | 'registration_ends'
-  | 'cancellation_starts'
-  | 'cancellation_ends'
   | 'alcohol_meter'
   | 'price'
-  | 'membership_required'
-  | 'outsiders_allowed'
   | 'responsible'
   | 'show_responsible'
-  | 'avec'
+  | 'weekly_event'
+  | 'weekly_event_end_time'
 > & {
   eventTranslations?: EventTranslation[]
   customFieldTemplates?: CustomFieldTemplate[]
