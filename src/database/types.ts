@@ -25,6 +25,25 @@ export type EventTranslation = {
   locale: string
 }
 
+export type EventInsertionData = Pick<
+  Event,
+  | 'user_id'
+  | 'starts'
+  | 'alcohol_meter'
+  | 'price'
+  | 'responsible'
+  | 'show_responsible'
+  | 'weekly_event'
+  | 'weekly_event_end_time'
+> & {
+  template?: boolean
+  translations: EventTranslation[]
+  location: Location
+  eventType: EventType
+  fields: CustomFieldInsertionData[]
+  registrationQuotas: RegistrationQuotaInsertionData[]
+}
+
 export type CustomField = {
   id: number
   registration_quota_id?: number
@@ -99,8 +118,10 @@ export type EventTypeRow = {
   implicit_alcohol_meter?: number
 }
 
-export type EventType = EventTypeRow & {
-  eventTypeTranslations: EventTypeTranslation[]
+export type EventType = {
+  id?: number
+  implicit_alcohol_meter?: number
+  translations: EventTypeTranslation[]
 }
 
 export type EventTypeTranslation = {

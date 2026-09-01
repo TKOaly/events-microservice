@@ -21,7 +21,7 @@ export async function getEventTemplateName(locale: string) {
 export async function getEventTemplate(id: number): Promise<EventTemplate> {
   const query = db('events')
 
-  const queryWithEventSelected = selectEventColumns(query, false)
+  const queryWithEventSelected = selectEventColumns(query)
 
   queryWithEventSelected
     .where('events.deleted', false)
@@ -37,17 +37,10 @@ export async function getEventTemplate(id: number): Promise<EventTemplate> {
 
   return {
     starts: event.starts,
-    registration_starts: event.registration_starts,
-    registration_ends: event.registration_ends,
-    cancellation_starts: event.cancellation_starts,
-    cancellation_ends: event.cancellation_ends,
     alcohol_meter: event.alcohol_meter,
     price: event.price,
-    membership_required: event.membership_required,
-    outsiders_allowed: event.outsiders_allowed,
     responsible: event.responsible,
     show_responsible: event.show_responsible,
-    avec: event.avec,
     eventTranslations: eventTranslations,
     customFieldTemplates: customFieldTemplates,
   }
