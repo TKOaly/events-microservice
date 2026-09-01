@@ -1,6 +1,6 @@
 import express from 'express'
 import * as events from '../database/events'
-import { eventRequestingSchema } from './validators'
+import { eventAddingSchema, eventRequestingSchema } from './validators'
 
 const router = express.Router()
 
@@ -18,6 +18,23 @@ router.get('/', async (req, res) => {
     )
 
     return res.status(200).json(calendarEvents)
+  } catch (e) {
+    console.log(e)
+    res.status(500).json({ error: 'internal server error' })
+  }
+})
+
+router.post('/', async (req, res) => {
+  try {
+    const result = eventAddingSchema.safeParse(req.query)
+
+    if (!result.success) {
+      return res.status(400).json({ error: 'Bad request' })
+    }
+
+    const id = events.insertEvent(result.data)
+
+    return res.status(200).json({id: id})
   } catch (e) {
     console.log(e)
     res.status(500).json({ error: 'internal server error' })

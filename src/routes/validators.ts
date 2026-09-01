@@ -1,7 +1,7 @@
-import { nonoptional, z } from 'zod'
+import { z } from 'zod'
 
 export const localeSchema = z.object({
-  locale: z.string().min(1, 'locale is required'),
+  locale: z.string().min(1, 'locale is required').max(3),
 })
 
 export const eventRequestingSchema = localeSchema.extend({
@@ -9,24 +9,24 @@ export const eventRequestingSchema = localeSchema.extend({
 })
 
 export const eventTranslationSchema = localeSchema.extend({
-  title: z.string(),
+  title: z.string().max(512).nonoptional(),
   description: z.string(),
 })
 
 export const locationTranslationSchema = localeSchema.extend({
-  location: z.string(),
+  location: z.string().max(512),
 })
 
 export const eventTypeTranslationSchema = localeSchema.extend({
-  event_type: z.string(),
+  event_type: z.string().max(512),
 })
 
 export const customFieldTranslationSchema = localeSchema.extend({
-  name: z.string(),
+  name: z.string().max(512),
 })
 
 export const registrationQuotaTranslationSchema = localeSchema.extend({
-  quota_name: z.string(),
+  quota_name: z.string().max(512),
 })
 
 export const locationSchema = z.object({
@@ -48,15 +48,15 @@ export const customFieldSchema = z.object({
 
 export const registrationQuotaSchema = z.object({
   max_participants: z.number().nonoptional(),
-  membership_required: z.boolean().optional(),
-  outsiders_allowed: z.boolean().optional(),
-  avec_can_attend: z.boolean().optional(),
+  membership_required: z.boolean().default(false),
+  outsiders_allowed: z.boolean().default(false),
+  avec_can_attend: z.boolean().default(false),
   registration_starts: z.date().nonoptional(),
   registration_ends: z.date().nonoptional(),
   cancellation_starts: z.date().optional(),
   cancellation_ends: z.date().optional(),
-  fields: z.array(customFieldSchema),
-  translations: z.array(registrationQuotaTranslationSchema),
+  fields: z.array(customFieldSchema).nonoptional(),
+  translations: z.array(registrationQuotaTranslationSchema).nonoptional(),
 })
 
 export const eventAddingSchema = z.object({
