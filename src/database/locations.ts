@@ -1,5 +1,5 @@
 import { db } from './db'
-import { Location, LocationRow, LocationTranslation } from './types'
+import { IdRow, Location, LocationRow, LocationTranslation } from './types'
 
 export async function getAllLocations(): Promise<Location[]> {
   const query = db('locations')
@@ -14,7 +14,7 @@ export async function getAllLocations(): Promise<Location[]> {
     rows.map(async row => ({
       id: row.id,
       map_link: row.map_link,
-      locationTranslations: await getLocationTranslations(row.id),
+      translations: await getLocationTranslations(row.id),
     })),
   )
 }
@@ -30,12 +30,15 @@ export const isExistingLocation = async (id: number): Promise<boolean> => {
 export async function insertLocation(location: Location): Promise<number> {
   const query = db('locations')
 
-  const row: Location = await query.insert({
-    map_link: location.map_link,
-  })
+  const row: IdRow = await query.insert(
+    {
+      map_link: location.map_link,
+    },
+    'id',
+  )
 
   await Promise.all(
-    location.locationTranslations.map(translation => {
+    location.translations.map(translation => {
       insertLocationTranslationIfNotExits(row.id, translation)
     }),
   )
