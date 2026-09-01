@@ -64,15 +64,15 @@ export async function addEventTemplate(id: number) {
 async function getEventTranslations(
   event_id: number,
 ): Promise<EventTranslation[]> {
-  const query = db('event_translations')
+  const query = db('events_translations')
 
   query.select<EventTranslation[]>(
-    'event_translations.locale',
-    'event_translations.title',
-    'event_translations.description',
+    'events_translations.locale',
+    'events_translations.title',
+    'events_translations.description',
   )
 
-  query.where('event_translations.event_id', event_id)
+  query.where('events_translations.event_id', event_id)
 
   return query
 }

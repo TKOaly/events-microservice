@@ -47,7 +47,7 @@ export async function insertLocationTranslationIfNotExits(
   location_id: number,
   translation: LocationTranslation,
 ) {
-  const query = db('location_translations')
+  const query = db('locations_translations')
 
   query.insert({
     location_id: location_id,
@@ -63,14 +63,14 @@ export async function insertLocationTranslationIfNotExits(
 async function getLocationTranslations(
   location_id: number,
 ): Promise<LocationTranslation[]> {
-  const query = db('location_translations')
+  const query = db('locations_translations')
 
   query.select<LocationTranslation[]>(
-    'location_translations.locale',
-    'location_translations.location',
+    'locations_translations.locale',
+    'locations_translations.location',
   )
 
-  query.where('location_translations.location_id', location_id)
+  query.where('locations_translations.location_id', location_id)
 
   return query
 }

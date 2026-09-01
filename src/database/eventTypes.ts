@@ -50,7 +50,7 @@ export async function insertEventTypeTranslationIfNotExits(
   event_type_id: number,
   translation: EventTypeTranslation,
 ) {
-  const query = db('event_translations')
+  const query = db('events_translations')
 
   query.insert({
     event_type_id: event_type_id,
@@ -66,14 +66,14 @@ export async function insertEventTypeTranslationIfNotExits(
 async function getEventTypeTranslations(
   event_type_id: number,
 ): Promise<EventTypeTranslation[]> {
-  const query = db('event_translations')
+  const query = db('events_translations')
 
   query.select<EventTypeTranslation[]>(
-    'event_translations.locale',
-    'event_translations.event_type',
+    'events_translations.locale',
+    'events_translations.event_type',
   )
 
-  query.where('event_translations.event_id', event_type_id)
+  query.where('events_translations.event_id', event_type_id)
 
   return query
 }

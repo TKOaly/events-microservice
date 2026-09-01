@@ -87,7 +87,7 @@ export async function insertCustomFieldTranslationIfNotExits(
   custom_field_id: number,
   translation: CustomFieldTranslation,
 ) {
-  const query = db('location_translations')
+  const query = db('custom_fields_translations')
 
   query.insert({
     custom_field_id: custom_field_id,
