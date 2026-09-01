@@ -113,11 +113,50 @@ export type LocationRow = {
   map_link?: string
 }
 
-export type Location = LocationRow & {
-  locationTranslations: LocationTranslation[]
+export type Location = {
+  id?: number
+  map_link?: string
+  translations: LocationTranslation[]
 }
 
 export type LocationTranslation = {
   locale: string
   location: string
+}
+
+export type IdRow = {
+  id: number
+}
+
+export type RegistrationQuota = {
+  id: number
+  event_id: number
+  max_participants: number
+  membership_required?: boolean
+  outsiders_allowed?: boolean
+  avec_can_attend?: boolean
+  registration_starts: Date
+  registration_ends: Date
+  cancellation_starts?: Date
+  cancellation_ends?: Date
+}
+
+export type RegistrationQuotaInsertionData = Pick<
+  RegistrationQuota,
+  | 'max_participants'
+  | 'membership_required'
+  | 'outsiders_allowed'
+  | 'avec_can_attend'
+  | 'registration_starts'
+  | 'registration_ends'
+  | 'cancellation_starts'
+  | 'cancellation_ends'
+> & {
+  fields: CustomFieldInsertionData[]
+  translations: RegistrationQuotaTranslation[]
+}
+
+export type RegistrationQuotaTranslation = {
+  locale: string
+  quota_name: string
 }
