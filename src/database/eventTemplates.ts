@@ -5,7 +5,7 @@ import {
   EventTemplate,
   EventTemplateTitle,
   EventTranslation,
-  Translation,
+  CustomFieldTranslation,
 } from './types'
 import { addTranslations } from './utils'
 
@@ -98,7 +98,7 @@ async function getCustomFieldTemplates(event_id: number) {
           'custom_fields_translations.name',
         )
         .where('custom_fields_translations.id', row.id)
-        .first<Translation[]>()
+        .first<CustomFieldTranslation[]>()
 
       return {
         registration_quota_id: row.registration_quota_id,

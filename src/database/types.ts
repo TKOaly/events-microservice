@@ -44,13 +44,18 @@ export type CustomFieldTemplate = Pick<
   CustomField,
   'registration_quota_id' | 'type' | 'options' | 'required'
 > & {
-  translations: Translation[]
+  translations: CustomFieldTranslation[]
 }
 
-export type Translation = {
+export type CustomFieldTranslation = {
   locale: string
   name: string
 }
+
+export type CustomFieldInsertionData = Pick<
+  CustomFieldTemplate,
+  'type' | 'options' | 'required' | 'translations'
+>
 
 export type Registration = {
   user_id?: number

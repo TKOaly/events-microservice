@@ -1,5 +1,5 @@
 import { db } from './db'
-import { EventType, EventTypeRow, EventTypeTranslation } from './types'
+import { EventType, EventTypeRow, EventTypeTranslation, IdRow } from './types'
 
 export async function getAllEventTypes(): Promise<EventType[]> {
   const query = db('event_types')
@@ -14,7 +14,7 @@ export async function getAllEventTypes(): Promise<EventType[]> {
     rows.map(async row => ({
       id: row.id,
       implicit_alcohol_meter: row.implicit_alcohol_meter,
-      eventTypeTranslations: await getEventTypeTranslations(row.id),
+      translations: await getEventTypeTranslations(row.id),
     })),
   )
 }
@@ -30,12 +30,15 @@ export const isExistingEventType = async (id: number): Promise<boolean> => {
 export async function insertEventType(eventType: EventType): Promise<number> {
   const query = db('event_types')
 
-  const row: EventType = await query.insert({
-    implicit_alcohol_meter: eventType.implicit_alcohol_meter,
-  })
+  const row: IdRow = await query.insert(
+    {
+      implicit_alcohol_meter: eventType.implicit_alcohol_meter,
+    },
+    'id',
+  )
 
   await Promise.all(
-    eventType.eventTypeTranslations.map(translation => {
+    eventType.translations.map(translation => {
       insertEventTypeTranslationIfNotExits(row.id, translation)
     }),
   )
