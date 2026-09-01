@@ -4,6 +4,26 @@ import { eventRequestingSchema } from './validators'
 
 const router = express.Router()
 
+router.get('/', async (req, res) => {
+  try {
+    const result = eventRequestingSchema.safeParse(req.query)
+
+    if (!result.success) {
+      return res.status(400).json({ error: 'Bad request' })
+    }
+
+    const calendarEvents = await events.getAllCalendarEvents(
+      result.data.locale,
+      result.data.fromDate?.toISOString(),
+    )
+
+    return res.status(200).json(calendarEvents)
+  } catch (e) {
+    console.log(e)
+    res.status(500).json({ error: 'internal server error' })
+  }
+})
+
 router.get('/eventList', async (req, res) => {
   try {
     const result = eventRequestingSchema.safeParse(req.query)
@@ -14,7 +34,7 @@ router.get('/eventList', async (req, res) => {
 
     const calendarEvents = await events.getAllCalendarEventsForEventList(
       result.data.locale,
-      result.data.fromDate?.toISOString()
+      result.data.fromDate?.toISOString(),
     )
 
     return res.status(200).json(calendarEvents)
@@ -28,7 +48,6 @@ router.get('/:eventId', async (req, res) => {
   try {
     const result = eventRequestingSchema.safeParse(req.query)
     const id = parseInt(req.params.eventId)
-
 
     if (!result.success) {
       return res.status(400).json({ error: 'Bad request' })
