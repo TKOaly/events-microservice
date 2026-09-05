@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { addTranslations, addEventCategory, addLocation } from './utils'
+import { addTranslations } from './utils'
 import { db } from './db'
 import {
   Event,
@@ -238,4 +238,54 @@ async function insertEventTranslationIfNotExits(
   query.onConflict(['event_id', 'locale']).ignore()
 
   await query
+}
+
+function addEventCategory(
+  query: Knex.QueryBuilder,
+  tableName: string,
+  locale: string,
+  columnsToSelect: { category?: boolean; implicit_alcohol_meter?: boolean },
+) {
+  const knex = query.client
+
+  query.leftJoin(tableName, function () {
+    this.on(`${tableName}.type_id`, '=', 'event_types.id').andOn(
+      knex.raw('event_types.deleted = false'),
+    )
+  })
+
+  if (columnsToSelect.category) {
+    addTranslations(query, locale, 'event_types', ['name as category'])
+  }
+
+  if (columnsToSelect.implicit_alcohol_meter) {
+    query.select('event_types.implicit_alcohol_meter')
+  }
+
+  return query
+}
+
+function addLocation(
+  query: Knex.QueryBuilder,
+  tableName: string,
+  locale: string,
+  columnsToSelect: { location?: boolean; map_link?: boolean },
+) {
+  const knex = query.client
+
+  query.leftJoin(tableName, function () {
+    this.on(`${tableName}.location_id`, '=', 'locations.id').andOn(
+      knex.raw('locations.deleted = false'),
+    )
+  })
+
+  if (columnsToSelect.location) {
+    addTranslations(query, locale, 'locations', ['name as location'])
+  }
+
+  if (columnsToSelect.map_link) {
+    query.select('event_type.map_link')
+  }
+
+  return query
 }
