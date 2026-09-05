@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const localeSchema = z.object({
-  locale: z.string().min(1, 'locale is required').max(3),
+  locale: z.string().max(3).default('fi'),
 })
 
 export const eventRequestingSchema = localeSchema.extend({
