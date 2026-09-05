@@ -4,7 +4,7 @@ import { localeSchema } from './validators'
 
 const router = express.Router()
 
-router.get('/:eventId/fields', async (req, res) => {
+router.get('/:eventId', async (req, res) => {
   try {
     const result = localeSchema.safeParse(req.query)
 
@@ -24,7 +24,7 @@ router.get('/:eventId/fields', async (req, res) => {
   }
 })
 
-router.get('/:eventId/fields/:quotaId', async (req, res) => {
+router.get('/:eventId/:quotaId', async (req, res) => {
   try {
     const result = localeSchema.safeParse(req.query)
 

@@ -15,6 +15,7 @@ export async function getEventsRegistrationQuotas(
   const query = db('registration_quotas')
 
   query.select(
+    'registration_quotas.id',
     'registration_quotas.max_participants',
     'registration_quotas.membership_required',
     'registration_quotas.outsiders_allowed',
