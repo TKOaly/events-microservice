@@ -6,6 +6,47 @@ import {
   RegistrationQuotaInsertionData,
   RegistrationQuotaTranslation,
 } from './types'
+import { addTranslations } from './utils'
+
+export async function getEventsRegistrationQuotas(
+  event_id: number,
+  locale: string,
+): Promise<RegistrationQuota[]> {
+  const query = db('registration_quotas')
+
+  query.select(
+    'registration_quotas.max_participants',
+    'registration_quotas.membership_required',
+    'registration_quotas.outsiders_allowed',
+    'registration_quotas.avec_can_attend',
+    'registration_quotas.registration_starts',
+    'registration_quotas.registration_ends',
+    'registration_quotas.cancellation_starts',
+    'registration_quotas.cancellation_ends',
+  )
+
+  const queryWithTranslations = addTranslations(
+    query,
+    'registration_quotas',
+    locale,
+    ['quota_name'],
+  )
+
+  queryWithTranslations
+    .join(
+      'registration_quota',
+      'registration_quota.id',
+      'registrations.registration_quota_id',
+    )
+    .select(
+      'registration_quota.id as registration_quota_id',
+      'registration_quota.quota',
+    )
+    .count('registrations.id as registered_participants')
+    .groupBy('registration_quota.id')
+
+    return queryWithTranslations
+}
 
 export async function insertRegistrationQuota(
   quota: RegistrationQuotaInsertionData,

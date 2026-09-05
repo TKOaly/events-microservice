@@ -153,6 +153,7 @@ export type RegistrationQuota = {
   id: number
   event_id: number
   max_participants: number
+  registered_participants: number
   membership_required?: boolean
   outsiders_allowed?: boolean
   avec_can_attend?: boolean
