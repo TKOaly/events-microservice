@@ -72,10 +72,115 @@ export async function getAllCalendarEvents(
     query.where(
       'starts',
       '>=',
-      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm')
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
     )
   }
   return query.then(r => r.map(parseQueryResult))
+}
+
+export type CalendarListEvent = Pick<
+  CalendarEvent,
+  | 'id'
+  | 'name'
+  | 'location'
+  | 'starts'
+  | 'registration_starts'
+  | 'registration_ends'
+>
+
+export async function getAllCalendarEventsForEventList(
+  fromDate?: string,
+): Promise<CalendarListEvent[]> {
+  const query = db('calendar_events').select<CalendarListEvent[]>(
+    'calendar_events.id',
+    'calendar_events.name',
+    'calendar_events.location',
+    'calendar_events.starts',
+    'calendar_events.registration_starts',
+    'calendar_events.registration_ends',
+  )
+
+  // Sort by start date
+  query.orderBy('starts', 'asc')
+
+  // Delete deleted events and templates
+  query.where('deleted', '0').where('template', '0')
+
+  if (fromDate) {
+    query.where(
+      'starts',
+      '>=',
+      moment(new Date(fromDate)).format('YYYY.MM.DD HH:mm'),
+    )
+  }
+
+  return query
+}
+
+export interface TemplateEventFull {
+  id: number
+  name: string
+  starts: Date | null
+  registration_starts: Date | null
+  registration_ends: Date | null
+  cancellation_starts: Date | null
+  cancellation_ends: Date | null
+  location: string | null
+  category: string | null
+  description: string | null
+  alcohol_meter: number | null
+  price: string | null
+  map: string | null
+  max_participants: number | null
+  membership_required: boolean | null
+  outsiders_allowed: boolean | null
+  responsible: string | null
+  show_responsible: boolean | null
+  avec: boolean | null
+}
+
+function parseTemplateQueryResult(row: any): TemplateEventFull {
+  return {
+    id: row.id,
+    name: row.name,
+    starts: row.starts ?? null,
+    registration_starts: row.registration_starts ?? null,
+    registration_ends: row.registration_ends ?? null,
+    cancellation_starts: row.cancellation_starts ?? null,
+    cancellation_ends: row.cancellation_ends ?? null,
+    location: row.location ?? null,
+    category: row.category ?? null,
+    description: row.description ?? null,
+    alcohol_meter: row.alcohol_meter ?? null,
+    price: row.price ?? null,
+    map: row.map ?? null,
+    max_participants: row.max_participants ?? null,
+    membership_required: row.membership_required ?? null,
+    outsiders_allowed: row.outsiders_allowed ?? null,
+    responsible: row.responsible ?? null,
+    show_responsible: row.show_responsible ?? null,
+    avec: row.avec ?? null,
+  }
+}
+
+export async function getTemplateEvents(): Promise<TemplateEventFull[]> {
+  return db('calendar_events')
+    .select()
+    .where('deleted', '0')
+    .where('template', '1')
+    .orderBy('name', 'asc')
+    .then(r => r.map(parseTemplateQueryResult))
+}
+
+export async function getEventById(
+  id: number,
+): Promise<TemplateEventFull | null> {
+  const row = await db('calendar_events')
+    .where({ id })
+    .whereNot('deleted', 1)
+    .first()
+  if (!row) return null
+  return parseTemplateQueryResult(row)
 }
 
 export const isExistingEvent = async (id: number): Promise<boolean> => {
