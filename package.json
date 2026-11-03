@@ -17,7 +17,7 @@
     "mysql2": "3.6.5",
     "remeda": "1.31.0",
     "typescript": "5.3.3",
-    "zod": "4.3.6"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@types/morgan": "^1.9.9",
